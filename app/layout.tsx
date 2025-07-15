@@ -13,7 +13,7 @@ import { WishlistProvider } from "@/contexts/wishlist-context"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Leather Luxe - Premium Leather Accessories",
+  title: "Koza - Premium Leather Accessories",
   description: "Discover premium leather belts, bags, and accessories crafted with passion and precision.",
     generator: 'v0.dev',
       icons: {
