@@ -12,8 +12,10 @@ export default function WishlistPage() {
   const { items: wishlist } = useWishlist()
 
   return (
+    <>
+    <Header />
     <div className="container mx-auto px-4">
-      <Header />
+      
       <h1 className="text-3xl font-bold my-8">Your Wishlist</h1>
 
       {wishlist.length > 0 ? (
@@ -37,7 +39,9 @@ export default function WishlistPage() {
         </div>
       )}
 
-      <Footer />
+      
     </div>
+    <Footer />
+    </>
   )
 }

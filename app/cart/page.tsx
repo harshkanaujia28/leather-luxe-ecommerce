@@ -16,8 +16,10 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
+      <>
+       <Header />
       <div className="container mx-auto px-4 ">
-        <Header />
+       
         <div className="text-center space-y-6 py-16">
           <ShoppingBag className="h-24 w-24 mx-auto text-muted-foreground" />
           <h1 className="text-3xl font-bold">Your cart is empty</h1>
@@ -26,8 +28,10 @@ export default function CartPage() {
             <Link href="/">Continue Shopping</Link>
           </Button>
         </div>
-        <Footer/>
+       
       </div>
+       <Footer/>
+      </>
     )
   }
 
@@ -36,8 +40,10 @@ export default function CartPage() {
   const finalTotal = total + shipping + tax
 
   return (
-    <div className="container mx-auto px-4 ">
+    <>
       <Header/>
+    <div className="container mx-auto px-4 ">
+    
       <h1 className="text-3xl font-bold mb-8 py-8">Shopping Cart</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -148,5 +154,7 @@ export default function CartPage() {
         </div>
       </div>
     </div>
+    <Footer/>
+    </>
   )
 }

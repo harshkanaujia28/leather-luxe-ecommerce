@@ -79,7 +79,7 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-6 gap-6 max-w-7xl mx-auto">
           {categories.map((category, index) => (
             <Link key={category.id} href={`/category/${category.slug}`}>
               <Card
