@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { ProductCard } from "@/components/product-card"
 import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import Footer from "@/components/footer"
 import { mockProducts } from "@/lib/mock-data"
 import type { Product } from "@/types"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"

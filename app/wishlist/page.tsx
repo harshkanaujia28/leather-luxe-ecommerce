@@ -4,7 +4,7 @@ import { useWishlist } from "@/contexts/wishlist-context"
 import { Heart } from "lucide-react"
 import { ProductCard } from "@/components/product-card"
 import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import Footer from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
