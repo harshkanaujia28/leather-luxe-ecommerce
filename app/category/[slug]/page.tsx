@@ -6,7 +6,7 @@ import { getCategoryBySlug, getProductsByCategory } from "@/lib/mock-data"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import Footer from "@/components/footer"
 
 const PRODUCTS_PER_PAGE = 10
 
@@ -31,8 +31,9 @@ export default function CategoryPage({
   const hasPrevPage = currentPage > 1
 
   return (
-    <div className="container mx-auto  ">
-      <Header/>
+    <>
+     <Header/>
+    <div className="container mx-auto max-w-7xl  ">
       {/* Category Header */}
       <div className="text-center space-y-4 mb-12 py-8">
         <h1 className="text-4xl font-bold">{category.name}</h1>
@@ -104,7 +105,9 @@ export default function CategoryPage({
           </Button>
         </div>
       )}
-      <Footer/>
+      
     </div>
+    <Footer/>
+    </>
   )
 }

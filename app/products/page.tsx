@@ -37,9 +37,9 @@ export default function AllProductsPage({
   })
 
   return (
+    <>
+    <Header />
     <div className="container mx-auto px-4">
-      <Header />
-
       <div className="text-start space-y-4 mb-12 py-8">
         <h1 className="text-4xl font-bold">All Products</h1>
         <p className="text-muted-foreground">
@@ -87,8 +87,8 @@ export default function AllProductsPage({
           </p>
         </div>
       )}
-
-      <Footer />
     </div>
+    <Footer />
+    </>
   )
 }

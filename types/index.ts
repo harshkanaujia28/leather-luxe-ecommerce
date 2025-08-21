@@ -9,6 +9,7 @@ export interface Product {
   images: string[]
   stock: number
   featured: boolean
+  bestSeller: boolean
   created_at: string
   updated_at: string
 }
@@ -18,6 +19,7 @@ export interface Category {
   name: string;
   slug: string;
   image: string; // URL of the image
+  subtitle: string;
   created_at: string;
   updated_at: string;
 }

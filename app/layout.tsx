@@ -32,7 +32,7 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
-            <div className="min-h-screen flex flex-col">
+            <div className="min-h-screen flex flex-col bg-background">
              
               <main className="flex-1">{children}</main>
              

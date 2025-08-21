@@ -1,99 +1,155 @@
-import Link from "next/link"
-import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from "lucide-react"
+"use client"
 
-export function Footer() {
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
+import { 
+  Facebook, 
+  Instagram, 
+  Twitter, 
+  Mail, 
+  Phone, 
+  MapPin,
+  Heart
+} from "lucide-react"
+
+export default function Footer() {
+  const currentYear = new Date().getFullYear()
+
   return (
-    <footer className="bg-muted/50 border-t">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              {/* <div className="h-8 w-8 rounded bg-primary" /> */}
-              <span className="text-3xl font-bold">Koza</span>
+    <footer className="bg-primary text-primary-foreground">
+      <div className="container mx-auto px-4">
+        {/* Newsletter Section */}
+        <div className="py-12 border-b border-primary-foreground/20">
+          <div className="max-w-2xl mx-auto text-center">
+            <h3 className="text-2xl font-bold mb-4">Stay Updated</h3>
+            <p className="text-primary-foreground/80 mb-6">
+              Subscribe to get new collections, care tips, and exclusive offers.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+              <Input 
+                placeholder="Enter your email"
+                className="bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/60"
+              />
+              <Button variant="secondary" className="whitespace-nowrap">
+                Subscribe
+              </Button>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Premium leather accessories crafted with passion and precision. Quality that lasts a lifetime.
+          </div>
+        </div>
+
+        {/* Main Footer Content */}
+        <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Company Info */}
+          <div>
+            <h4 className="text-xl font-bold mb-4">Koza</h4>
+            <p className="text-primary-foreground/80 mb-4">
+              Premium leather accessories crafted with passion and precision. 
+              Quality that lasts a lifetime.
             </p>
             <div className="flex space-x-4">
-              <Link href="#" className="text-muted-foreground hover:text-primary">
+              <Button variant="ghost" size="icon" className="text-primary-foreground hover:text-accent">
                 <Facebook className="h-5 w-5" />
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary">
-                <Twitter className="h-5 w-5" />
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary">
+              </Button>
+              <Button variant="ghost" size="icon" className="text-primary-foreground hover:text-accent">
                 <Instagram className="h-5 w-5" />
-              </Link>
+              </Button>
+              <Button variant="ghost" size="icon" className="text-primary-foreground hover:text-accent">
+                <Twitter className="h-5 w-5" />
+              </Button>
             </div>
           </div>
 
           {/* Quick Links */}
-          <div className="space-y-4">
-            <h3 className="font-semibold">Quick Links</h3>
-            <div className="space-y-2 text-sm">
-              <Link href="/about" className="block text-muted-foreground hover:text-primary">
-                About Us
-              </Link>
-              <Link href="/contact" className="block text-muted-foreground hover:text-primary">
-                Contact
-              </Link>
-              <Link href="/category/new-products" className="block text-muted-foreground hover:text-primary">
-                New Products
-              </Link>
-              <Link href="/category/top-sellers" className="block text-muted-foreground hover:text-primary">
-                Best Sellers
-              </Link>
-            </div>
+          <div>
+            <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+            <ul className="space-y-2">
+              {[
+                { name: "About Us", href: "/about" },
+                { name: "Contact", href: "/contact" },
+                { name: "New Products", href: "/category/new-products" },
+                { name: "Best Sellers", href: "/category/top-sellers" },
+              ].map(({ name, href }) => (
+                <li key={name}>
+                  <Link 
+                    href={href} 
+                    className="text-primary-foreground/80 hover:text-accent transition-colors duration-200"
+                  >
+                    {name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* Categories */}
-          <div className="space-y-4">
-            <h3 className="font-semibold">Categories</h3>
-            <div className="space-y-2 text-sm">
-              <Link href="/category/leather-belts" className="block text-muted-foreground hover:text-primary">
-                Leather Belts
-              </Link>
-              <Link href="/category/backpacks" className="block text-muted-foreground hover:text-primary">
-                Backpacks
-              </Link>
-              <Link href="/category/laptop-bags" className="block text-muted-foreground hover:text-primary">
-                Laptop Bags
-              </Link>
-              <Link href="/category/womens-bags" className="block text-muted-foreground hover:text-primary">
-                Women's Bags
-              </Link>
-            </div>
+          <div>
+            <h4 className="text-lg font-semibold mb-4">Categories</h4>
+            <ul className="space-y-2">
+              {[
+                { name: "Leather Belts", href: "/category/leather-belts" },
+                { name: "Backpacks", href: "/category/backpacks" },
+                { name: "Laptop Bags", href: "/category/laptop-bags" },
+                { name: "Women's Bags", href: "/category/womens-bags" },
+              ].map(({ name, href }) => (
+                <li key={name}>
+                  <Link 
+                    href={href} 
+                    className="text-primary-foreground/80 hover:text-accent transition-colors duration-200"
+                  >
+                    {name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Contact Info */}
-          <div className="space-y-4">
-            <h3 className="font-semibold">Contact Info</h3>
+          {/* Contact */}
+          <div>
+            <h4 className="text-lg font-semibold mb-4">Contact Info</h4>
             <div className="space-y-3 text-sm">
-              <div className="flex items-center space-x-2 text-muted-foreground">
-                <Mail className="h-4 w-4" />
-                <span>support@leatherluxe.com</span>
+              <div className="flex items-center gap-3">
+                <Mail className="h-4 w-4 text-accent" />
+                <span className="text-primary-foreground/80">
+                  support@leatherluxe.com
+                </span>
               </div>
-              <div className="flex items-center space-x-2 text-muted-foreground">
-                <Phone className="h-4 w-4" />
-                <span>+1 (555) 123-4567</span>
+              <div className="flex items-center gap-3">
+                <Phone className="h-4 w-4 text-accent" />
+                <span className="text-primary-foreground/80">
+                  +1 (555) 123-4567
+                </span>
               </div>
-              <div className="flex items-center space-x-2 text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>123 Leather St, Craft City, CC 12345</span>
+              <div className="flex items-center gap-3">
+                <MapPin className="h-4 w-4 text-accent" />
+                <span className="text-primary-foreground/80">
+                  123 Leather St, Craft City, CC 12345
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-muted-foreground">© 2024 Koza. All rights reserved.</p>
-          <div className="flex space-x-4 mt-4 md:mt-0">
-            <Link href="/legal/privacy" className="text-sm text-muted-foreground hover:text-primary">
+        <Separator className="bg-primary-foreground/20" />
+
+        {/* Bottom Footer */}
+        <div className="py-6 flex flex-col md:flex-row justify-between items-center text-sm text-primary-foreground/80">
+          <div className="flex items-center gap-1 mb-4 md:mb-0">
+            <span>© {currentYear} Koza. Made with</span>
+            <Heart className="h-4 w-4 text-accent fill-accent" />
+            <span>for leather lovers</span>
+          </div>
+          
+          <div className="flex flex-wrap gap-6">
+            <Link href="/legal/privacy" className="hover:text-accent transition-colors duration-200">
               Privacy Policy
             </Link>
-            <Link href="/legal/terms" className="text-sm text-muted-foreground hover:text-primary">
+            <Link href="/legal/terms" className="hover:text-accent transition-colors duration-200">
               Terms & Conditions
+            </Link>
+            <Link href="/legal/accessibility" className="hover:text-accent transition-colors duration-200">
+              Accessibility
             </Link>
           </div>
         </div>
