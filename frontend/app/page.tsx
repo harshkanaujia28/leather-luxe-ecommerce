@@ -1,3 +1,4 @@
+"use client"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -11,11 +12,62 @@ import WhyUs from "@/components/whyus"
 import { NewsletterSection } from "@/components/newsletter-section"
 import HeroSection from "@/components/Hero"
 import CategoryGrid from "@/components/CategoryGrid"
+import api from "@/utils/axios";
+import { useState, useEffect } from "react";
+
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  brand: string;
+  category?: { subCategory?: string; gender?: string };
+  offer?: { isActive: boolean; value?: number };
+  rating?: number;
+  image?: string;
+}
 
 export default function HomePage() {
   const featuredProducts = getFeaturedProducts()
   const bestSellerProducts = getBestSellerProducts()
   const categories = mockCategories.slice(0, 6)
+    const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await api.get("/products");
+      // Optional: show only latest 8 products
+      const allProducts = res.data.products || [];
+      const sorted = allProducts.slice(-8).reverse(); // latest 8 products
+      setProducts(sorted);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load products.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  if (loading)
+    return (
+      <div className="flex justify-center items-center min-h-[60vh] text-lg font-medium">
+        Loading products...
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="flex justify-center items-center min-h-[60vh] text-red-600 font-medium">
+        {error}
+      </div>
+    );
 
   return (
     <div className="space-y-0">
@@ -27,17 +79,21 @@ export default function HomePage() {
       {/* Featured Products */}
       <section className="container mx-auto px-4 py-16">
         <div className="text-center space-y-4 mb-12">
-          <h2 className="text-3xl font-bold">Featured Products</h2>
+          <h2 className="text-3xl font-bold tracking-tight">✨ New Arrivals</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Handpicked favorites that showcase our finest craftsmanship
+            Discover the latest additions to our collection — crafted to impress.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-          {featuredProducts.slice(0, 6).map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {products.length === 0 ? (
+          <p className="text-center text-gray-500">No new arrivals available.</p>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+            {products.map((product) => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
+        )}
 
         <div className="text-center mt-12">
           <Button size="lg" variant="outline" asChild>

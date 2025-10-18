@@ -44,9 +44,9 @@ export function Header() {
   const router = useRouter();
 
   // ✅ From contexts
-// ✅ From contexts
-const { state } = useCart();
-const cartCount = state.items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
+  // ✅ From contexts
+  const { state } = useCart();
+  const cartCount = state.items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
 
 
   const { items: wishlistItems } = useWishlist();
@@ -73,11 +73,15 @@ const cartCount = state.items?.reduce((sum, item) => sum + item.quantity, 0) ?? 
 
   return (
     <header
-      className="relative w-full bg-cover bg-center bg-no-repeat"
+      className="relative w-full bg-no-repeat bg-center bg-[#013220]"
       style={{
         backgroundImage: "url('/koza-banner.jpg')",
+        backgroundSize: "contain", // cover ki jagah contain use karenge
+        minHeight: "200px",
+        width:"100%"        // header ki minimum height
       }}
     >
+
       {/* 🔶 Top Offer Bar */}
       <div className="bg-[#7b2600] text-white text-xs sm:text-sm py-2 text-center font-medium">
         ⚡ Get 10% Off as first-time customer — Use Code{" "}
@@ -119,8 +123,8 @@ const cartCount = state.items?.reduce((sum, item) => sum + item.quantity, 0) ?? 
             </form>
           </div>
 
-          {/* Center: Logo */}
-          <Link
+       
+          {/* <Link
             href="/"
             aria-label="Craft & Glory Home"
             className="flex items-center justify-center"
@@ -133,7 +137,7 @@ const cartCount = state.items?.reduce((sum, item) => sum + item.quantity, 0) ?? 
               priority
               className="object-contain"
             />
-          </Link>
+          </Link> */}
 
           {/* Right Section */}
           <div className="flex items-center space-x-3 md:space-x-4">
@@ -245,7 +249,7 @@ const cartCount = state.items?.reduce((sum, item) => sum + item.quantity, 0) ?? 
             </DropdownMenu>
 
             {/* Currency */}
-            <div className="hidden sm:flex items-center space-x-1 text-[#e5c997] font-medium">
+            {/* <div className="hidden sm:flex items-center space-x-1 text-[#e5c997] font-medium">
               <Image
                 src="/india-flag.png"
                 alt="INR Currency"
@@ -253,7 +257,7 @@ const cartCount = state.items?.reduce((sum, item) => sum + item.quantity, 0) ?? 
                 height={14}
               />
               <span>INR</span>
-            </div>
+            </div> */}
           </div>
         </div>
 

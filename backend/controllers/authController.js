@@ -3,43 +3,42 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/sendEmail.js";
 
+
 export const register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
-    // check if user already exists
+    if (!name || !email || !password)
+      return res.status(400).json({ message: "All fields are required" });
+
     const existing = await User.findOne({ email });
-    if (existing) {
-      return res.status(400).json({ message: "User already exists" });
-    }
+    if (existing) return res.status(400).json({ message: "User already exists" });
 
-    // generate 6-digit OTP
+    // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000);
 
-    // create user with plain password (will be hashed by pre-save hook)
     const user = await User.create({
       name,
       email,
-      password, // ⚡️ plain password, will be auto-hashed
-      role,
+      password,
+      role: "user",
       isVerified: false,
       otp,
-      otpExpires: Date.now() + 10 * 60 * 1000, // 10 min valid
+      otpExpires: Date.now() + 10 * 60 * 1000, // 10 mins
     });
 
-    // send OTP email
+    // Send OTP Email
     await sendEmail(
       email,
-      "Verify your account",
-      `<h2>Welcome to Zafrine!</h2>
+      "Verify your Koza account",
+      `<h2>Welcome to Koza!</h2>
        <p>Your verification code is: <b>${otp}</b></p>
        <p>This code will expire in 10 minutes.</p>`
     );
 
-    res
-      .status(201)
-      .json({ message: "User registered, please verify OTP", userId: user._id });
+    res.status(201).json({ message: "User registered, OTP sent", userId: user._id });
   } catch (err) {
+    console.error("Register Error:", err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -47,29 +46,28 @@ export const register = async (req, res) => {
 export const verifyOtp = async (req, res) => {
   try {
     const { userId, otp } = req.body;
-
+     console.log("Backend verifyOtp req.body:", req.body); // ✅ debug
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (user.isVerified) {
-      return res.status(400).json({ message: "User already verified" });
-    }
+    if (user.isVerified) return res.status(400).json({ message: "User already verified" });
 
-    if (user.otp !== Number(otp) || user.otpExpires < Date.now()) {
+    if (String(user.otp) !== String(otp) || new Date(user.otpExpires) < new Date()) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
-    // mark as verified
     user.isVerified = true;
     user.otp = undefined;
     user.otpExpires = undefined;
     await user.save();
 
-    res.json({ message: "User verified successfully" });
+    res.status(200).json({ message: "User verified successfully" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("Verify OTP Error:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 // Forgot Password Handler
 // Forgot Password Handler
@@ -78,7 +76,6 @@ export const forgotPassword = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-    
       return res
         .status(404)
         .json({ status: "error", message: "User not found" });
@@ -91,19 +88,22 @@ export const forgotPassword = async (req, res) => {
     const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
     await sendEmail(
       user.email,
-      "Zafrine Password Reset Request",
+      "Koza Password Reset Request",
       `<p>Hello ${user.name || "User"},</p>
-       <p>We received a request to reset your password. Click the link below to proceed:</p>
-       <p><a href="${resetLink}">Reset Password</a></p>
-       <p>This link will expire in 1 hour. If you did not request a password reset, please ignore this email.</p>
-       <p>— The Zafrine Team</p>`
+   <p>We received a request to reset your password. Click the link below to proceed:</p>
+   <p><a href="${resetLink}" target="_blank" style="color:#007bff;text-decoration:none;">Reset Password</a></p>
+   <p>This link will expire in 1 hour. If you did not request a password reset, please ignore this email.</p>
+   <br/>
+   <p>— The Koza Team</p>
+   <hr/>
+   <small style="color:#888;">This is an automated message. Please do not reply.</small>`
     );
-  res
-  
+
+    res
+
       .status(200)
       .json({ status: "success", message: "Reset link sent to your email" });
-      console.log("Sending reset link to:", email, "Token:", resetToken);
-
+    console.log("Sending reset link to:", email, "Token:", resetToken);
   } catch (err) {
     console.error("Forgot Password Error:", err);
     res.status(500).json({ status: "error", message: "Server error" });
@@ -130,10 +130,12 @@ export const resetPassword = async (req, res) => {
     }
 
     // ✅ Let the pre('save') hook handle hashing
-    user.password = password; 
+    user.password = password;
     await user.save();
 
-    console.log(`[Reset Password] Password successfully reset for: ${user.email}`);
+    console.log(
+      `[Reset Password] Password successfully reset for: ${user.email}`
+    );
 
     return res.status(200).json({
       status: "success",
@@ -154,9 +156,6 @@ export const resetPassword = async (req, res) => {
     });
   }
 };
-
-
-
 
 export const login = async (req, res) => {
   try {
@@ -189,7 +188,8 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { name, phone, email, address, city, state, country, password } = req.body;
+    const { name, phone, email, address, city, state, country, password } =
+      req.body;
 
     const user = await User.findById(req.user.id);
     if (!user) {
@@ -223,10 +223,7 @@ export const updateProfile = async (req, res) => {
     // 🔹 Return updated profile without password
     const updatedUser = await User.findById(user._id).select("-password");
     res.json({ user: updatedUser });
-
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
-
-
