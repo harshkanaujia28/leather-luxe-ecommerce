@@ -55,20 +55,9 @@ export default function HomePage() {
     fetchProducts();
   }, []);
 
-  if (loading)
-    return (
-      <div className="flex justify-center items-center min-h-[60vh] text-lg font-medium">
-        Loading products...
-      </div>
-    );
+ 
 
-  if (error)
-    return (
-      <div className="flex justify-center items-center min-h-[60vh] text-red-600 font-medium">
-        {error}
-      </div>
-    );
-
+  
   return (
     <div className="space-y-0">
       <Header />
