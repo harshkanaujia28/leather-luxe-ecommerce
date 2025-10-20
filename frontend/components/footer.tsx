@@ -149,7 +149,7 @@ export default function Footer() {
             <Link href="/terms-and-conditions" className="hover:text-accent transition-colors duration-200">
               Terms & Conditions
             </Link>
-            <Link href="/cancellations-refunds" className="hover:text-accent transition-colors duration-200">
+            <Link href="/cancellations-and-refunds" className="hover:text-accent transition-colors duration-200">
               Cancellations & Refunds
             </Link>
             <Link href="/shipping-policy" className="hover:text-accent transition-colors duration-200">
