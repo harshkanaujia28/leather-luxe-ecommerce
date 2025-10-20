@@ -10,19 +10,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-// Utility: get product image based on selected color or variant
-const getProductImage = (item: any): string => {
-  if (item.selectedColor) {
-    const colorObj = item.product.specifications?.colors?.find((c: any) => c.color === item.selectedColor);
+// Utility: get first available image
+const getProductImage = (product: any, selectedColor?: string) => {
+  // 1️⃣ If color selected, use its first image
+  if (selectedColor) {
+    const colorObj = product.specifications?.colors?.find((c: any) => c.color === selectedColor);
     if (colorObj?.images?.length) return colorObj.images[0];
   }
 
-  // fallback first image from product
-  if (item.product.images?.length) return item.product.images[0];
+  // 2️⃣ Fallback: use first image from product.images
+  if (product.images?.length) return product.images[0];
 
-  // fallback placeholder
-  return "/placeholder.svg?height=300&width=300";
+  // 3️⃣ Placeholder
+  return "/placeholder.svg";
 };
+
 
 // Calculate final price after offer
 const getFinalPrice = (product: any) => {
@@ -87,12 +89,14 @@ export default function CartPage() {
                       {/* Product Image */}
                       <div className="relative w-24 h-24 flex-shrink-0 rounded overflow-hidden border border-gray-200">
                         <Image
-                          src={getProductImage(item)}
+                          src={getProductImage(item.product, item.selectedColor)} // ✅ pass product & selectedColor
                           alt={item.product?.name || "Product image"}
                           fill
                           sizes="(max-width: 768px) 100vw, 33vw"
-                          className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+                          className="object-cover"
                         />
+
+
                       </div>
 
                       {/* Product Info */}

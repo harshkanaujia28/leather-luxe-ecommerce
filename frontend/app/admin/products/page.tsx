@@ -32,6 +32,7 @@ export default function AdminProductsPage() {
       setLoading(true);
       const res = await api.get("/products");
       setProducts(Array.isArray(res.data) ? res.data : res.data.products || []);
+      console.log(res.data.products)
     } catch (err) {
       console.error("Error fetching products:", err);
     } finally {

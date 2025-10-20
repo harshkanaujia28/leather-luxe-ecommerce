@@ -47,8 +47,10 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 ">
-      <Header/>
+    <>
+      <Header />
+    <div className="container mx-auto px-4">
+    
       <div className="text-center space-y-4 mb-12 py-16">
         <h1 className="text-4xl font-bold">Contact Us</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -110,8 +112,7 @@ export default function ContactPage() {
                 <Mail className="h-6 w-6 text-primary mt-1" />
                 <div>
                   <h3 className="font-semibold">Email</h3>
-                  <p className="text-muted-foreground">support@leatherluxe.com</p>
-                  <p className="text-muted-foreground">orders@leatherluxe.com</p>
+                  <p className="text-muted-foreground">info@koza.co.in</p>
                 </div>
               </div>
 
@@ -119,8 +120,7 @@ export default function ContactPage() {
                 <Phone className="h-6 w-6 text-primary mt-1" />
                 <div>
                   <h3 className="font-semibold">Phone</h3>
-                  <p className="text-muted-foreground">+1 (555) 123-4567</p>
-                  <p className="text-muted-foreground">+1 (555) 123-4568</p>
+                  <p className="text-muted-foreground">+91 6392161771</p>
                 </div>
               </div>
 
@@ -129,11 +129,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-semibold">Address</h3>
                   <p className="text-muted-foreground">
-                    123 Leather Street
-                    <br />
-                    Craft City, CC 12345
-                    <br />
-                    United States
+                    29/1, JUHI, Juhi Labour Colony, Deep Cinema, Kanpur, 208014
                   </p>
                 </div>
               </div>
@@ -143,9 +139,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-semibold">Business Hours</h3>
                   <p className="text-muted-foreground">
-                    Monday - Friday: 9:00 AM - 6:00 PM
-                    <br />
-                    Saturday: 10:00 AM - 4:00 PM
+                    Monday - Saturday: 10:00 AM - 6:00 PM
                     <br />
                     Sunday: Closed
                   </p>
@@ -167,7 +161,7 @@ export default function ContactPage() {
                 <div>
                   <h4 className="font-medium">Do you offer international shipping?</h4>
                   <p className="text-muted-foreground">
-                    Yes, we ship worldwide. Shipping costs and delivery times vary by location.
+                    Currently, we ship only within India. For other locations, please contact support.
                   </p>
                 </div>
                 <div>
@@ -182,7 +176,9 @@ export default function ContactPage() {
           </Card>
         </div>
       </div>
-      <Footer />
+     
     </div>
+     <Footer />
+    </>
   )
 }

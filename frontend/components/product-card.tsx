@@ -51,40 +51,40 @@ export function ProductCard({ product }: ProductCardProps) {
     return product.price;
   };
 
-  const handleAddToCart = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  // const handleAddToCart = async (e: React.MouseEvent) => {
+  //   e.preventDefault();
+  //   e.stopPropagation();
 
-    if (product.stock <= 0) {
-      toast({
-        title: "Out of Stock",
-        description: `${product.name} unavailable`,
-        variant: "destructive",
-      });
-      return;
-    }
+  //   if (product.stock <= 0) {
+  //     toast({
+  //       title: "Out of Stock",
+  //       description: `${product.name} unavailable`,
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
 
-    if (!product._id) {
-      console.error("❌ Product missing _id");
-      return;
-    }
+  //   if (!product._id) {
+  //     console.error("❌ Product missing _id");
+  //     return;
+  //   }
 
 
-    await addToCart(
-      product._id,
-      quantity,
-      selectedSize,
-      selectedColor,
-      selectedVariant,
-      product.offer,       // ✅ send the offer object
-      snapshotPrice        // ✅ send the final price
-    );
+  //   await addToCart(
+  //     product._id,
+  //     quantity,
+  //     selectedSize,
+  //     selectedColor,
+  //     selectedVariant,
+  //     product.offer,       // ✅ send the offer object
+  //     snapshotPrice        // ✅ send the final price
+  //   );
 
-    toast({
-      title: "Added to Cart",
-      description: `${product.name} added to cart`,
-    });
-  };
+  //   toast({
+  //     title: "Added to Cart",
+  //     description: `${product.name} added to cart`,
+  //   });
+  // };
   // Total stock from variants
   const totalStock = product.variants?.reduce(
     (sum: number, v: any) => sum + (v.stock || 0),
@@ -140,7 +140,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
 
           {/* Add to Cart Overlay */}
-          <div className="absolute inset-0 flex items-end justify-center bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+          {/* <div className="absolute inset-0 flex items-end justify-center bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               size="sm"
               onClick={handleAddToCart}
@@ -150,7 +150,7 @@ export function ProductCard({ product }: ProductCardProps) {
               <ShoppingCart className="h-4 w-4 mr-1" />
               Add to Cart
             </Button>
-          </div>
+          </div> */}
         </div>
 
         <CardContent className="p-4 space-y-1">

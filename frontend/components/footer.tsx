@@ -4,12 +4,12 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { 
-  Facebook, 
-  Instagram, 
-  Twitter, 
-  Mail, 
-  Phone, 
+import {
+  Facebook,
+  Instagram,
+  Twitter,
+  Mail,
+  Phone,
   MapPin,
   Heart
 } from "lucide-react"
@@ -28,7 +28,7 @@ export default function Footer() {
               Subscribe to get new collections, care tips, and exclusive offers.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-              <Input 
+              <Input
                 placeholder="Enter your email"
                 className="bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/60"
               />
@@ -45,7 +45,7 @@ export default function Footer() {
           <div>
             <h4 className="text-xl font-bold mb-4">Koza</h4>
             <p className="text-primary-foreground/80 mb-4">
-              Premium leather accessories crafted with passion and precision. 
+              Premium leather accessories crafted with passion and precision.
               Quality that lasts a lifetime.
             </p>
             <div className="flex space-x-4">
@@ -72,8 +72,8 @@ export default function Footer() {
                 { name: "Best Sellers", href: "/category/top-sellers" },
               ].map(({ name, href }) => (
                 <li key={name}>
-                  <Link 
-                    href={href} 
+                  <Link
+                    href={href}
                     className="text-primary-foreground/80 hover:text-accent transition-colors duration-200"
                   >
                     {name}
@@ -94,8 +94,8 @@ export default function Footer() {
                 { name: "Women's Bags", href: "/category/womens-bags" },
               ].map(({ name, href }) => (
                 <li key={name}>
-                  <Link 
-                    href={href} 
+                  <Link
+                    href={href}
                     className="text-primary-foreground/80 hover:text-accent transition-colors duration-200"
                   >
                     {name}
@@ -112,23 +112,24 @@ export default function Footer() {
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-accent" />
                 <span className="text-primary-foreground/80">
-                  support@leatherluxe.com
+                  info@koza.co.in
                 </span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-accent" />
                 <span className="text-primary-foreground/80">
-                  +1 (555) 123-4567
+                  +91 6392161771
                 </span>
               </div>
               <div className="flex items-center gap-3">
                 <MapPin className="h-4 w-4 text-accent" />
                 <span className="text-primary-foreground/80">
-                  123 Leather St, Craft City, CC 12345
+                  29/1, JUHI, Juhi Labour Colony, Deep Cinema, Kanpur, 208014
                 </span>
               </div>
             </div>
           </div>
+
         </div>
 
         <Separator className="bg-primary-foreground/20" />
@@ -140,17 +141,23 @@ export default function Footer() {
             <Heart className="h-4 w-4 text-accent fill-accent" />
             <span>for leather lovers</span>
           </div>
-          
+
           <div className="flex flex-wrap gap-6">
-            <Link href="/legal/privacy" className="hover:text-accent transition-colors duration-200">
+            <Link href="/privacy-policy" className="hover:text-accent transition-colors duration-200">
               Privacy Policy
             </Link>
-            <Link href="/legal/terms" className="hover:text-accent transition-colors duration-200">
+            <Link href="/terms-and-conditions" className="hover:text-accent transition-colors duration-200">
               Terms & Conditions
             </Link>
-            <Link href="/legal/accessibility" className="hover:text-accent transition-colors duration-200">
-              Accessibility
+            <Link href="/cancellations-refunds" className="hover:text-accent transition-colors duration-200">
+              Cancellations & Refunds
             </Link>
+            <Link href="/shipping-policy" className="hover:text-accent transition-colors duration-200">
+              Shipping Policy
+            </Link>
+            {/* <Link href="/legal/accessibility" className="hover:text-accent transition-colors duration-200">
+              Accessibility
+            </Link> */}
           </div>
         </div>
       </div>
