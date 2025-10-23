@@ -5,7 +5,7 @@ import { isAdmin } from "../middlewares/roleMiddleware.js";
 const router = express.Router();
 
 router.post("/",protect, isAdmin, createCategory);        // create or merge subcategories
-router.get("/",protect,  getCategories);          // list all categories
+router.get("/",  getCategories);          // list all categories
 router.put("/:id",protect, isAdmin, updateCategory);      // add/remove subcategories
 router.delete("/:id",protect, isAdmin, deleteCategory);   // delete category
 

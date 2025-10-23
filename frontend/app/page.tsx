@@ -30,7 +30,7 @@ export default function HomePage() {
   const featuredProducts = getFeaturedProducts()
   const bestSellerProducts = getBestSellerProducts()
   const categories = mockCategories.slice(0, 6)
-    const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -55,15 +55,15 @@ export default function HomePage() {
     fetchProducts();
   }, []);
 
- 
 
-  
+
+
   return (
     <div className="space-y-0">
       <Header />
       <CategoryGrid categories={categories} />
       <HeroSection />
-     
+
 
       {/* Featured Products */}
       <section className="container mx-auto px-4 py-16">
@@ -154,15 +154,18 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-            {bestSellerProducts.slice(0, 6).map((product) => (
+            {/* {bestSellerProducts.slice(0, 6).map((product) => (
               <ProductCard key={product.id} product={product} />
-            ))}
+            ))} */}
+            <div className="col-span-full text-center py-16 bg-gray-50 rounded-lg shadow-md">
+              <p className="text-gray-400 italic text-lg">Coming soon...</p>
+            </div>
 
           </div>
 
           <div className="text-center mt-12">
             <Button size="lg" variant="outline" asChild>
-              <Link href="/products">Shop Best Sellers</Link>
+              <Link href="/products">See products </Link>
             </Button>
           </div>
         </section>

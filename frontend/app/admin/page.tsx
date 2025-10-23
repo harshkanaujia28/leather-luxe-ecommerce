@@ -1,10 +1,21 @@
+"use client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { mockProducts, mockUsers } from "@/lib/mock-data"
 import { DollarSign, Package, ShoppingCart, Users } from "lucide-react"
 import { SalesChart } from "@/components/sales-chart"
+import { Button } from "@/components/ui/button";
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+
+  LogOut,
+} from "lucide-react";
 
 export default function AdminDashboard() {
+  const { user, signOut } = useAuth();
+  const router = useRouter();
   const totalProducts = mockProducts.length
   const totalOrders = 45 // Mock data
   const totalCustomers = mockUsers.filter((u) => u.role === "customer").length
@@ -42,12 +53,30 @@ export default function AdminDashboard() {
       status: "delivered",
     },
   ]
+  const handleLogout = () => {
+    // Clear authentication
+    signOut();
+
+    // Remove role cookie
+    Cookies.remove("role");
+
+    // Redirect to login page
+    router.push("/auth/login");
+  };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome to your admin dashboard. Here's an overview of your store.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-muted-foreground">Welcome to your admin dashboard. Here's an overview of your store.</p>
+        </div>
+
+
+        <Button onClick={handleLogout} className="bg-red-600 text-white hover:bg-red-700">
+          <LogOut className="w-4 h-4 mr-2" />
+          Logout
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -96,7 +125,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-  <SalesChart/>
+      <SalesChart />
       {/* Recent Orders */}
       <Card>
         <CardHeader>
@@ -134,7 +163,7 @@ export default function AdminDashboard() {
           </div>
         </CardContent>
       </Card>
-     
+
     </div>
   )
 }

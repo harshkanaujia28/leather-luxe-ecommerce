@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import Cookies from "js-cookie";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -25,6 +26,7 @@ export default function LoginPage() {
     try {
       const result = await signIn(email, password);
       const userData = result.user;
+      Cookies.set("role", userData?.role, { expires: 7 });
 
       toast({
         title: "Welcome back!",

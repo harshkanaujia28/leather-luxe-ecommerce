@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "@/hooks/use-toast";
 
 // 1️⃣ Create Axios instance
 const api = axios.create({
@@ -30,6 +31,11 @@ api.interceptors.response.use(
     // Handle 401, 403 errors globally
     if (error.response?.status === 401) {
       console.error("Unauthorized! Please login again.");
+         toast({
+        title: "Login Required",
+        description: "Please login to access more functionality.",
+        variant: "destructive",
+      });
       // Optional: logout user
     }
     return Promise.reject(error);

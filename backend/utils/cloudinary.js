@@ -10,17 +10,24 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Proper upload function
+/**
+ * Upload buffer to Cloudinary with timeout and optimization.
+ * Supports large images (up to ~50MB) and auto quality adjustment.
+ */
 export const uploadToCloudinary = (buffer, folder) =>
   new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { folder, allowed_formats: ["jpg", "png", "webp"] },
-      (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
-      }
+      {
+        folder,
+        timeout: 300000, // 5 min
+        chunk_size: 10_000_000, // 10 MB chunks
+        allowed_formats: ["jpg", "jpeg", "png", "webp"],
+        transformation: [{ quality: "auto:good", fetch_format: "auto" }],
+      },
+      (err, result) => (err ? reject(err) : resolve(result))
     );
     streamifier.createReadStream(buffer).pipe(stream);
   });
+
 
 export default cloudinary;

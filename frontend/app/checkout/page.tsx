@@ -21,7 +21,7 @@ import { loadRazorpayScript } from "@/utils/razorpay";
 export default function CheckoutPage() {
   const router = useRouter();
   const { state, clearCart } = useCart();
-  const { delivery, setDelivery } = useCheckout();
+  // const { delivery, setDelivery } = useCheckout();
   const { getProfile, updateProfile, createPaymentSession, placeOrder, validateCoupon } = useApi();
   const { toast } = useToast();
 
@@ -32,13 +32,13 @@ export default function CheckoutPage() {
   const [couponCode, setCouponCode] = useState("");
   const [couponValue, setCouponValue] = useState(0);
   const [couponType, setCouponType] = useState<"Percentage" | "Fixed Amount" | null>(null);
-  const [pincode, setPincode] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [pincodeInput, setPincodeInput] = useState("");
-  const [pincodeError, setPincodeError] = useState("");
-  const [pincodeSuccess, setPincodeSuccess] = useState("");
+  // const [pincode, setPincode] = useState("");
+  // const [loading, setLoading] = useState(false);
+  // const [error, setError] = useState<string | null>(null);
+  // const [success, setSuccess] = useState<string | null>(null);
+  // const [pincodeInput, setPincodeInput] = useState("");
+  // const [pincodeError, setPincodeError] = useState("");
+  // const [pincodeSuccess, setPincodeSuccess] = useState("");
 
   useEffect(() => {
     setHasMounted(true);
@@ -87,7 +87,10 @@ export default function CheckoutPage() {
   const tax = parseFloat(((subtotalAfterOffer - couponDiscount) * 0.1).toFixed(2));
 
   // ✅ Final total including delivery fee
-  const total = parseFloat((subtotalAfterOffer - couponDiscount + tax + (delivery?.deliveryFee || 0)).toFixed(2));
+  const total = parseFloat(
+    (subtotalAfterOffer - couponDiscount + tax).toFixed(2)
+  );
+
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("en-IN", {
@@ -143,87 +146,77 @@ export default function CheckoutPage() {
   };
 
   // ✅ Check Delivery (Pincode)
-  const checkDelivery = async () => {
-    if (!pincode) {
-      toast({
-        title: "Pincode Required",
-        description: "Please enter a pincode to check delivery.",
-        variant: "info", // ✅ info because user input missing
-      });
-      return;
-    }
+  // const checkDelivery = async () => {
+  //   if (!pincode) {
+  //     toast({
+  //       title: "Pincode Required",
+  //       description: "Please enter a pincode to check delivery.",
+  //       variant: "info", // ✅ info because user input missing
+  //     });
+  //     return;
+  //   }
 
-    setLoading(true);
-    setError("");
-    setSuccess("");
+  //   setLoading(true);
+  //   setError("");
+  //   setSuccess("");
 
-    try {
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/zones/check-pincode`, { pincode });
+  //   try {
+  //     const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/zones/check-pincode`, { pincode });
 
-      if (res.data.available) {
-        setDelivery({
-          deliveryFee: res.data.deliveryFee,
-          deliveryTime: res.data.deliveryTime,
-          zoneType: res.data.zoneType,
-        });
-        setSuccess("✅ Great news! Delivery is available in your area.");
-        setError("");
+  //     if (res.data.available) {
+  //       setDelivery({
+  //         deliveryFee: res.data.deliveryFee,
+  //         deliveryTime: res.data.deliveryTime,
+  //         zoneType: res.data.zoneType,
+  //       });
+  //       setSuccess("✅ Great news! Delivery is available in your area.");
+  //       setError("");
 
-        toast({
-          title: "Delivery Available 🎉",
-          description: `We deliver to your area. Delivery fee: ₹${res.data.deliveryFee}, Time: ${res.data.deliveryTime}`,
-          variant: "success", // ✅ success when available
-        });
-      } else {
-        setDelivery(null);
-        setError(res.data.message || "❌ Sorry, we currently don't deliver to this pincode.");
-        setSuccess("");
+  //       toast({
+  //         title: "Delivery Available 🎉",
+  //         description: `We deliver to your area. Delivery fee: ₹${res.data.deliveryFee}, Time: ${res.data.deliveryTime}`,
+  //         variant: "success", // ✅ success when available
+  //       });
+  //     } else {
+  //       setDelivery(null);
+  //       setError(res.data.message || "❌ Sorry, we currently don't deliver to this pincode.");
+  //       setSuccess("");
 
-        toast({
-          title: "Delivery Unavailable",
-          description: res.data.message || "Sorry, we don't deliver to this pincode.",
-          variant: "warning", // ✅ warning because condition unmet
-        });
-      }
-    } catch (err: any) {
-      console.error(err);
-      const errorMessage =
-        err.response?.data?.message || "Something went wrong! Please try again later.";
+  //       toast({
+  //         title: "Delivery Unavailable",
+  //         description: res.data.message || "Sorry, we don't deliver to this pincode.",
+  //         variant: "warning", // ✅ warning because condition unmet
+  //       });
+  //     }
+  //   } catch (err: any) {
+  //     console.error(err);
+  //     const errorMessage =
+  //       err.response?.data?.message || "Something went wrong! Please try again later.";
 
-      setError(`❌ ${errorMessage}`);
-      setSuccess("");
+  //     setError(`❌ ${errorMessage}`);
+  //     setSuccess("");
 
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive", // ✅ destructive for server errors
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     toast({
+  //       title: "Error",
+  //       description: errorMessage,
+  //       variant: "destructive", // ✅ destructive for server errors
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
 
   // ✅ Place Order
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!delivery) {
-      toast({
-        title: "Delivery Required",
-        description: "Please select a delivery option before checkout",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      // Update user profile first
+      // 1️⃣ Update user profile
       await updateProfile(profileData);
 
-      // Map cart items to order payload
+      // 2️⃣ Map cart items and calculate finalPrice per item including offer
       const products = state.items.map((item) => {
         const price = item.price ?? item.product?.price ?? 0;
         let discount = 0;
@@ -232,6 +225,8 @@ export default function CheckoutPage() {
           if (item.offer.type === "Percentage") discount = (price * item.offer.value) / 100;
           else if (["Flat", "Fixed"].includes(item.offer.type)) discount = item.offer.value;
         }
+
+        const finalPrice = price - discount;
 
         return {
           product: item.product?._id || item._id,
@@ -242,65 +237,48 @@ export default function CheckoutPage() {
           name: item.product?.name || item.name,
           brand: item.product?.brand || item.brand,
           image: item.product?.image || item.image,
-          price: item.finalPrice ?? item.price,    // ✅ final price
-          originalPrice: item.price,               // ✅ original price
+          price: finalPrice,       // ✅ offer-adjusted price
+          originalPrice: price,
           offer: item.offer || null,
         };
       });
 
-      // Subtotal after offer discount
-      const subtotalAfterOffer = products.reduce(
+      // 3️⃣ Razorpay total = sum of finalPrice * quantity
+      const razorpayTotal = products.reduce(
         (sum, p) => sum + p.price * p.quantity,
         0
       );
 
-      // Total offer discount
-      const totalOfferDiscount = products.reduce(
-        (sum, p) => sum + (p.originalPrice - p.price) * p.quantity,
-        0
-      );
-
-      // Coupon discount
+      // 4️⃣ Coupon discount
       const couponDiscount =
         couponType === "Percentage"
-          ? (couponValue / 100) * subtotalAfterOffer
+          ? (couponValue / 100) * razorpayTotal
           : couponType === "Fixed Amount"
             ? couponValue
             : 0;
 
-      // Tax calculation
-      const tax = parseFloat(
-        ((subtotalAfterOffer - couponDiscount) * 0.1).toFixed(2)
-      );
+      // 5️⃣ Tax 10% on subtotal after coupon
+      const tax = parseFloat(((razorpayTotal - couponDiscount) * 0.1).toFixed(2));
 
-      // Final total including delivery
-      const total = parseFloat(
-        (
-          subtotalAfterOffer -
-          couponDiscount +
-          tax +
-          (delivery?.deliveryFee || 0)
-        ).toFixed(2)
-      );
+      // 6️⃣ Final total for Razorpay
+      const total = parseFloat((razorpayTotal - couponDiscount + tax).toFixed(2));
 
-      const activeOfferId =
-        state.items.find((item) => item.offer?.isActive)?._id || null;
-
+      // 7️⃣ Prepare order payload
       const orderPayload = {
         user: profileData._id,
         customer: profileData.name,
         email: profileData.email,
         products,
-        itemsTotal: subtotalAfterOffer,
-        discount: totalOfferDiscount,
+        itemsTotal: razorpayTotal,
+        discount: products.reduce((sum, p) => sum + (p.originalPrice - p.price) * p.quantity, 0),
         couponCode: couponCode || null,
         couponType: couponType || null,
         couponValue: couponValue || 0,
         couponDiscount,
         taxAmount: tax,
-        deliveryFee: delivery?.deliveryFee || 0,
+        deliveryFee: 0,
         finalTotal: total,
-        activeOffer: activeOfferId,
+        activeOffer: state.items.find((item) => item.offer?.isActive)?._id || null,
         shippingAddress: {
           address: profileData.address,
           city: profileData.city,
@@ -308,12 +286,12 @@ export default function CheckoutPage() {
           zipCode: profileData.zipCode,
           phone: profileData.phone,
         },
-        deliveryTime: delivery?.deliveryTime || "1-2 days",
+        deliveryTime: "Standard 2-5 days",
       };
 
       if (typeof window === "undefined") return;
 
-      // ✅ RAZORPAY PAYMENT FLOW
+      // 8️⃣ Razorpay payment flow
       if (paymentMethod === "razorpay") {
         const res = await loadRazorpayScript();
         if (!res) {
@@ -326,92 +304,80 @@ export default function CheckoutPage() {
           return;
         }
 
-        try {
-          // Validate before payment
-          const preValidate = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/payment/pre-validate`,
-            { products, couponCode: couponCode || null }
-          );
+        // Pre-validate stock/offer
+        // 🧩 Get backend-validated total (with offers, coupon, tax)
+        const validated = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/payment/pre-validate`,
+          { products, couponCode: couponCode || null }
+        );
 
-          if (!preValidate.data.success) {
-            toast({
-              title: "Validation Failed",
-              description: preValidate.data.message || "Offer/Stock invalid",
-              variant: "destructive",
-            });
-            setIsLoading(false);
-            return;
-          }
-          const finalTotal = parseFloat(total.toFixed(2)); // exactly what user sees
-
-          console.log("💰 Final checkout total:", finalTotal);
-          // Create Razorpay order
-          const { data } = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/payment/create-order`,
-            { amount: total }
-          );
-
-          const options = {
-            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-            amount: data.amount,
-            currency: "INR",
-            name: "Koza Leather",
-            description: "Order Payment",
-            order_id: data.orderId,
-            handler: async function (response: any) {
-              try {
-                await axios.post(
-                  `${process.env.NEXT_PUBLIC_API_URL}/payment/verify-payment`,
-                  {
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature,
-                    orderDetails: {
-                      ...orderPayload,
-                      paymentMethod: "Razorpay",
-                      paymentStatus: "paid",
-                    },
-                  }
-                );
-
-                toast({
-                  title: "Payment Successful 🎉",
-                  description: "Your order has been placed successfully!",
-                  variant: "success",
-                });
-                clearCart();
-                router.push("/orders");
-              } catch (err: any) {
-                toast({
-                  title: "Payment Verification Failed",
-                  description:
-                    err?.response?.data?.message || "Something went wrong",
-                  variant: "destructive",
-                });
-              }
-            },
-            prefill: {
-              name: profileData?.name,
-              email: profileData?.email,
-              contact: profileData?.phone,
-            },
-            theme: { color: "primary" },
-          };
-
-          const paymentObject = new (window as any).Razorpay(options);
-          paymentObject.open();
-        } catch (err: any) {
+        if (!validated.data.success) {
           toast({
-            title: "Validation Error",
-            description:
-              err?.response?.data?.message || "Failed before payment",
+            title: "Validation Failed",
+            description: validated.data.message || "Offer/Stock invalid",
             variant: "destructive",
           });
           setIsLoading(false);
           return;
         }
+
+        const backendFinalTotal = validated.data.finalTotal; // ✅ the backend-corrected total
+
+        // 🧾 Now create Razorpay order with backend’s total
+        const { data } = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/payment/create-order`,
+          { amount: backendFinalTotal }
+        );
+
+
+        const options = {
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+          amount: data.amount,
+          currency: "INR",
+          name: "Koza Leather",
+          description: "Order Payment",
+          order_id: data.orderId,
+          handler: async (response: any) => {
+            try {
+              await axios.post(
+                `${process.env.NEXT_PUBLIC_API_URL}/payment/verify-payment`,
+                {
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  orderDetails: { ...orderPayload, paymentMethod: "Razorpay", paymentStatus: "paid" },
+                 amount: backendFinalTotal,    // ✅ final total after offers + coupons + tax + delivery
+
+                }
+              );
+
+              toast({
+                title: "Payment Successful 🎉",
+                description: "Your order has been placed successfully!",
+                variant: "success",
+              });
+              clearCart();
+              router.push("/orders");
+            } catch (err: any) {
+              toast({
+                title: "Payment Verification Failed",
+                description: err?.response?.data?.message || "Something went wrong",
+                variant: "destructive",
+              });
+            }
+          },
+          prefill: {
+            name: profileData?.name,
+            email: profileData?.email,
+            contact: profileData?.phone,
+          },
+          theme: { color: "primary" },
+        };
+
+        const paymentObject = new (window as any).Razorpay(options);
+        paymentObject.open();
       } else {
-        // ✅ COD order placement
+        // ✅ COD remains unchanged
         await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
           ...orderPayload,
           paymentMethod: "COD",
@@ -431,10 +397,7 @@ export default function CheckoutPage() {
       console.error(err);
       toast({
         title: "Checkout failed",
-        description:
-          err?.response?.data?.message ||
-          err?.message ||
-          "Something went wrong",
+        description: err?.response?.data?.message || err?.message || "Something went wrong",
         variant: "destructive",
       });
     } finally {
@@ -456,7 +419,7 @@ export default function CheckoutPage() {
             {/* Left Column: Shipping & Payment */}
             <div className="space-y-8">
               {/* Delivery Check */}
-              <Card className="bg-white border border-lime-500/30 shadow-lg rounded-2xl">
+              {/* <Card className="bg-white border border-lime-500/30 shadow-lg rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-primary">Check Delivery Availability</CardTitle>
                 </CardHeader>
@@ -476,7 +439,7 @@ export default function CheckoutPage() {
                   {error && <p className="text-red-500">{error}</p>}
                   {success && <p className="text-green-500">{success}</p>}
                 </CardContent>
-              </Card>
+              </Card> */}
               {/* Contact Info */}
               <Card className="bg-white border border-lime-500/30 shadow-lg rounded-2xl">
                 <CardHeader>
@@ -631,10 +594,11 @@ export default function CheckoutPage() {
 
                     // Calculate final price per item
                     const finalPrice = hasOffer
-                      ? offer.type === "percentage"
-                        ? basePrice - basePrice * (offer.value / 100)
+                      ? ["percentage", "Percentage"].includes(offer.type)
+                        ? basePrice - (basePrice * offer.value) / 100
                         : basePrice - offer.value
                       : basePrice;
+
 
                     const name = product.name || item.name || "Product";
                     const brand = product.brand || item.brand || "Brand";
@@ -670,6 +634,7 @@ export default function CheckoutPage() {
                         </div>
 
                         <span className="text-gray-500">{formatCurrency(finalPrice * item.quantity)}</span>
+
                       </div>
                     );
                   })}
@@ -725,8 +690,9 @@ export default function CheckoutPage() {
 
                     // Total
                     const total = parseFloat(
-                      (subtotalAfterOffer - couponDiscount + tax + (delivery?.deliveryFee || 0)).toFixed(2)
+                      (subtotalAfterOffer - couponDiscount + tax).toFixed(2)
                     );
+
 
                     return (
                       <>
@@ -740,12 +706,12 @@ export default function CheckoutPage() {
                           <span>₹{tax.toFixed(2)}</span>
                         </div>
 
-                        {delivery && (
+                        {/* {delivery && (
                           <div className="flex justify-between text-black">
                             <span>Delivery Fee</span>
                             <span>₹{delivery.deliveryFee.toFixed(2)}</span>
                           </div>
-                        )}
+                        )} */}
 
                         {couponValue > 0 && (
                           <div className="flex justify-between text-black">

@@ -49,17 +49,38 @@ export default function Footer() {
               Quality that lasts a lifetime.
             </p>
             <div className="flex space-x-4">
-              <Button variant="ghost" size="icon" className="text-primary-foreground hover:text-accent">
-                <Facebook className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-primary-foreground hover:text-accent">
-                <Instagram className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-primary-foreground hover:text-accent">
-                <Twitter className="h-5 w-5" />
-              </Button>
+              <Link
+                href="https://www.facebook.com/profile.php?id=61581975248425" // 🔹 replace with your real page URL
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-primary-foreground hover:text-accent"
+                >
+                  <Facebook className="h-5 w-5" />
+                </Button>
+              </Link>
+
+              <Link
+                href="https://www.instagram.com/kozao_ffical/" // 🔹 replace with your real page URL
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-primary-foreground hover:text-accent"
+                >
+                  <Instagram className="h-5 w-5" />
+                </Button>
+              </Link>
+
+             
             </div>
           </div>
+
 
           {/* Quick Links */}
           <div>

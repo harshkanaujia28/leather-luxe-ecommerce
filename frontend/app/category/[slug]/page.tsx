@@ -1,113 +1,128 @@
-import { notFound } from "next/navigation"
-import { ProductCard } from "@/components/product-card"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { getCategoryBySlug, getProductsByCategory } from "@/lib/mock-data"
-import Link from "next/link"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Header } from "@/components/header"
-import Footer from "@/components/footer"
+"use client";
 
-const PRODUCTS_PER_PAGE = 10
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Header } from "@/components/header";
+import Footer from "@/components/footer";
+import { ProductCard } from "@/components/product-card";
+import api from "@/utils/axios";
+import { Button } from "@/components/ui/button";
 
-export default function CategoryPage({
-  params,
-  searchParams,
-}: {
-  params: { slug: string }
-  searchParams: { page?: string }
-}) {
-  const category = getCategoryBySlug(params.slug)
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  brand: string;
+  images?: string[];
+  category: { subCategory: string; gender: string };
+  offer?: { isActive: boolean; value?: number };
+  rating?: number;
+}
 
-  if (!category) {
-    notFound()
-  }
+export default function CategoryPage() {
+  const { slug } = useParams();
+  const router = useRouter();
 
-  const currentPage = Number(searchParams.page) || 1
-  const { products, totalCount } = getProductsByCategory(params.slug, currentPage, PRODUCTS_PER_PAGE)
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const totalPages = Math.ceil(totalCount / PRODUCTS_PER_PAGE)
-  const hasNextPage = currentPage < totalPages
-  const hasPrevPage = currentPage > 1
+  // ✅ Fetch products only if category = "leather-belts"
+  const fetchCategoryProducts = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      if (slug !== "leather-belts") {
+        // For other categories → directly show "Coming Soon"
+        setProducts([]);
+        setLoading(false);
+        return;
+      }
+
+      const res = await api.get(`/products?categorySlug=${slug}`);
+      setProducts(res.data.products || []);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load products. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (slug) fetchCategoryProducts();
+  }, [slug]);
+
+  const formattedTitle = slug?.toString().replaceAll("-", " ");
 
   return (
     <>
-     <Header/>
-    <div className="container mx-auto max-w-7xl  ">
-      {/* Category Header */}
-      <div className="text-center space-y-4 mb-12 py-8">
-        <h1 className="text-4xl font-bold">{category.name}</h1>
-        <p className="text-muted-foreground">Discover our collection of premium {category.name.toLowerCase()}</p>
-        <p className="text-sm text-muted-foreground">
-          Showing {products.length} of {totalCount} products
-        </p>
-      </div>
+      <Header />
 
-      {/* Products Grid */}
-      {products.length > 0 ? (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+      <main className="max-w-7xl mx-auto px-4 py-12 min-h-screen">
+        {/* Category Title */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-amber-700 to-yellow-600 bg-clip-text text-transparent capitalize">
+            {formattedTitle}
+          </h1>
+          <p className="text-muted-foreground mt-3">
+            Explore our finest collection of {formattedTitle}.
+          </p>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="text-center text-red-500 mb-6">
+            <p>{error}</p>
+            <Button
+              variant="outline"
+              onClick={fetchCategoryProducts}
+              className="mt-3"
+            >
+              Retry
+            </Button>
+          </div>
+        )}
+
+        {/* Loading Skeleton */}
+        {loading ? (
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                className="animate-pulse bg-gray-200 h-80 rounded-xl shadow-sm"
+              />
             ))}
           </div>
+        ) : products.length > 0 ? (
+          // ✅ Product Grid (only for Leather Belts)
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {products.map((product) => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
+        ) : (
+          // ✅ Coming Soon Section (for all other categories)
+          <div className="flex flex-col items-center justify-center h-[60vh] bg-gradient-to-b from-gray-50 to-white rounded-2xl border border-gray-200 text-center shadow-sm">
+            <h2 className="text-3xl md:text-4xl text-gray-700 font-semibold mb-4">
+              Coming Soon!
+            </h2>
+            <p className="text-gray-500 mb-8 max-w-md">
+              We’re crafting premium {formattedTitle} — check back soon for new arrivals!
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => router.push("/products")}
+              className="text-lg hover:bg-gray-100"
+            >
+              Explore Other Products
+            </Button>
+          </div>
+        )}
+      </main>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-center">Page Navigation</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-center space-x-4">
-                  {hasPrevPage && (
-                    <Button variant="outline" asChild>
-                      <Link href={`/category/${params.slug}?page=${currentPage - 1}`}>
-                        <ChevronLeft className="h-4 w-4 mr-2" />
-                        Previous
-                      </Link>
-                    </Button>
-                  )}
-
-                  <div className="flex items-center space-x-2">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                      <Button key={pageNum} variant={pageNum === currentPage ? "default" : "outline"} size="sm" asChild>
-                        <Link href={`/category/${params.slug}?page=${pageNum}`}>{pageNum}</Link>
-                      </Button>
-                    ))}
-                  </div>
-
-                  {hasNextPage && (
-                    <Button variant="outline" asChild>
-                      <Link href={`/category/${params.slug}?page=${currentPage + 1}`}>
-                        Next
-                        <ChevronRight className="h-4 w-4 ml-2" />
-                      </Link>
-                    </Button>
-                  )}
-                </div>
-
-                <p className="text-center text-sm text-muted-foreground mt-4">
-                  Page {currentPage} of {totalPages}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </>
-      ) : (
-        <div className="text-center space-y-6">
-          <h2 className="text-2xl font-semibold">No products found</h2>
-          <p className="text-muted-foreground">
-            We're currently updating our {category.name.toLowerCase()} collection. Check back soon!
-          </p>
-          <Button asChild>
-            <Link href="/">Browse All Products</Link>
-          </Button>
-        </div>
-      )}
-      
-    </div>
-    <Footer/>
+      <Footer />
     </>
-  )
+  );
 }

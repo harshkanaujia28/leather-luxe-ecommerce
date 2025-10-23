@@ -33,7 +33,7 @@ export const placeOrder = async (req, res) => {
       totalQuantity += item.quantity;
 
       // Determine final price
-      let finalPrice = item.finalPrice ?? dbProduct.price; // frontend price takes priority
+      let finalPrice = item.finalPrice ?? dbProduct.price;
       let discountApplied = 0;
       let offerSnapshot = {
         isActive: false,
@@ -43,7 +43,7 @@ export const placeOrder = async (req, res) => {
         description: "",
       };
 
-      // Apply backend DB offer if frontend price is not passed or equals original
+      // Apply backend offer if applicable
       if (
         (!item.finalPrice || item.finalPrice === dbProduct.price) &&
         dbProduct.offer?.isActive &&
@@ -80,7 +80,6 @@ export const placeOrder = async (req, res) => {
         }
         await dbProduct.save();
       } else if (item.offer) {
-        // Use frontend offer if provided
         offerSnapshot = { ...item.offer };
         discountApplied = item.offer.discountApplied || 0;
         finalPrice = dbProduct.price - discountApplied;
@@ -103,16 +102,11 @@ export const placeOrder = async (req, res) => {
       });
     }
 
-    // Delivery Fee
-    let deliveryFee = 0;
-    let deliveryTime = null;
-    const zone = await Zone.findOne({ pincode: shippingAddress.zipCode });
-    if (zone) {
-      deliveryFee = zone.deliveryFee;
-      deliveryTime = zone.deliveryTime;
-    }
+    // 🚫 Delivery check removed
+    const deliveryFee = 0;
+    const deliveryTime = null;
 
-    // Coupon Logic
+    // ✅ Coupon logic
     let appliedCoupon = null;
     let couponDiscount = 0;
     if (couponCode) {
@@ -127,21 +121,14 @@ export const placeOrder = async (req, res) => {
         return res.status(400).json({ message: "Coupon usage limit reached" });
 
       if (appliedCoupon.minOrder && subtotal < appliedCoupon.minOrder)
-        return res
-          .status(400)
-          .json({
-            message: `Minimum order amount is ${appliedCoupon.minOrder}`,
-          });
+        return res.status(400).json({
+          message: `Minimum order amount is ₹${appliedCoupon.minOrder}`,
+        });
 
-      if (
-        appliedCoupon.minQuantity &&
-        totalQuantity < appliedCoupon.minQuantity
-      )
-        return res
-          .status(400)
-          .json({
-            message: `Minimum ${appliedCoupon.minQuantity} items required to use this coupon`,
-          });
+      if (appliedCoupon.minQuantity && totalQuantity < appliedCoupon.minQuantity)
+        return res.status(400).json({
+          message: `Minimum ${appliedCoupon.minQuantity} items required to use this coupon`,
+        });
 
       const userOrders = await Order.find({ user: userId, couponCode });
       if (userOrders.length >= appliedCoupon.perUserLimit)
@@ -155,14 +142,14 @@ export const placeOrder = async (req, res) => {
           : appliedCoupon.value;
     }
 
-    // Tax & Final Total
+    // ✅ Tax & Final Total
     const TAX_RATE = 0.1;
     const taxableAmount = subtotal - couponDiscount;
     const taxAmount = Math.round(taxableAmount * TAX_RATE * 100) / 100;
     const finalTotal =
       Math.round((taxableAmount + taxAmount + deliveryFee) * 100) / 100;
 
-    // Create order
+    // ✅ Create order
     const orderData = {
       user: userId,
       customer: name,
@@ -192,7 +179,7 @@ export const placeOrder = async (req, res) => {
       );
     }
 
-    // Send notification email
+    // ✅ Send admin email
     try {
       const html = getOrderEmailTemplate(order);
       await sendEmail(
@@ -201,7 +188,7 @@ export const placeOrder = async (req, res) => {
         html
       );
     } catch (err) {
-      console.error("❌ Failed to send order notification:", err.message);
+      console.error("❌ Failed to send order email:", err.message);
     }
 
     res.status(201).json(order);

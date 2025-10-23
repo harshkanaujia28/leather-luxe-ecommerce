@@ -1,17 +1,15 @@
-
 import type React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-import { Header } from "@/components/header";
-import Footer from "@/components/footer";
 import { CartProvider } from "@/contexts/cart-context";
 import { WishlistProvider } from "@/contexts/wishlist-context";
 import { CheckoutProvider } from "@/contexts/checkoutContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ApiProvider } from "@/contexts/api-context";
 import { Toaster } from "@/components/ui/toaster";
+import ClientLayoutWrapper from "@/components/ClientLayoutWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,15 +36,9 @@ export default function RootLayout({
             <CartProvider>
               <WishlistProvider>
                 <CheckoutProvider>
-                
-                    <div className="min-h-screen flex flex-col bg-background">
-                     
-                      <main className="flex-1">{children}</main>
-                     
-                    </div>
-                 
+                  <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
+                  <Toaster />
                 </CheckoutProvider>
-                <Toaster />
               </WishlistProvider>
             </CartProvider>
           </AuthProvider>
