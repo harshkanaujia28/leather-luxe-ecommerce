@@ -4,59 +4,27 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ShoppingCart,
-  User,
-  Search,
-  Heart,
-  Menu,
-  X,
-  LogOut,
-} from "lucide-react";
+import { ShoppingCart, User, Search, Heart, Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useCart } from "@/contexts/cart-context"; // ✅ connected
+import { useCart } from "@/contexts/cart-context";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWishlist } from "@/contexts/wishlist-context";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import clsx from "clsx";
-
-// const NAVIGATION = [
-//   { name: "Men", href: "/category/men" },
-//   { name: "Women", href: "/category/women" },
-//   { name: "Gadget Accessories", href: "/category/gadget-accessories" },
-//   { name: "How To Care", href: "/how-to-care" },
-//   { name: "About Us", href: "/about" },
-//   { name: "Community", href: "/community" },
-//   { name: "Reviews", href: "/reviews" },
-// ];
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
 
-  // ✅ From contexts
-  // ✅ From contexts
   const { state } = useCart();
   const cartCount = state.items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
 
-
   const { items: wishlistItems } = useWishlist();
   const { user, signOut } = useAuth();
-
-  // ✅ Cart & wishlist counts
-
   const wishlistCount = wishlistItems.length;
 
-  // ✅ Search logic
   const handleSearch = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -73,14 +41,30 @@ export function Header() {
 
   return (
     <header
-      className="relative w-full bg-no-repeat bg-center bg-[#013220]"
+      className="relative w-full h-[15vh] sm:h-[15vh] md:h-[20vh] lg:h-[25vh] bg-center bg-no-repeat bg-cover"
       style={{
-        backgroundImage: "url('/koza-banner.jpg')",
-        backgroundSize: "contain", // cover ki jagah contain use karenge
-        minHeight: "200px",
-        width:"100%"        // header ki minimum height
+        backgroundImage: "url('/WhatsApp Image 2025-10-24 at 17.14.27_39a6aa22.jpg')", // default mobile
       }}
     >
+    
+      <style jsx>{`
+        @media (min-width: 768px) {
+          header {
+            background-image: url('/WhatsApp Image 2025-10-24 at 17.14.27_39a6aa22.jpg');
+          }
+        }
+        @media (min-width: 1024px) {
+          header {
+            background-image: url('/WhatsApp Image 2025-10-24 at 17.14.27_39a6aa22.jpg');
+          }
+        }
+        @media (min-width: 1440px) {
+          header {
+            background-image: url('/WhatsApp Image 2025-10-24 at 17.14.27_39a6aa22.jpg');
+          }
+        }
+      `}</style>
+
 
       {/* 🔶 Top Offer Bar */}
       <div className="bg-[#7b2600] text-white text-xs sm:text-sm py-2 text-center font-medium">
