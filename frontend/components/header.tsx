@@ -79,7 +79,7 @@ export function Header() {
     items-center 
     justify-between 
     px-3 sm:px-6 md:px-10 lg:px-16 
-    h-[11vh] sm:h-[14vh] md:h-[12vh] lg:h-[13vh]
+    h-[10vh] sm:h-[10vh] md:h-[12vh] lg:h-[13vh]
     py-4
   "
       >
@@ -119,17 +119,35 @@ export function Header() {
         <Link
           href="/"
           aria-label="Craft & Glory Home"
-          className="flex-1 flex items-center justify-center md:justify-center"
+          className="flex-1 flex items-center justify-center"
         >
           <Image
             src="/KOZA_Diwali (3).png"
             alt="Craft & Glory Logo"
             width={300}
             height={270}
-            className="w-[200px] h-[250px] sm:w-[300px] sm:h-[250px] object-contain ml-8"
+            className="
+      object-contain 
+      
+      /* ✅ VERY SMALL DEVICES (360px–480px) */
+      max-[480px]:w-[190px] max-[480px]:h-[160px]
+
+      /* ✅ SMALL PHONES (480px–639px) */
+      sm:w-[160px] sm:h-[120px]
+
+      /* ✅ TABLET (≥768px) */
+      md:w-[210px] md:h-[160px]
+
+      /* ✅ DESKTOP (≥1024px) */
+      lg:w-[260px] lg:h-[200px]
+
+      /* ✅ LARGE DESKTOPS (≥1280px) */
+      xl:w-[300px] xl:h-[230px]
+    "
             priority
           />
         </Link>
+
 
         {/* Right Section */}
         <div className="flex items-center space-x-3 md:space-x-4">
