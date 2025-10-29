@@ -1,8 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
-import dotenv from "dotenv";
 import streamifier from "streamifier";
-
-dotenv.config();
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -10,24 +7,31 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-/**
- * Upload buffer to Cloudinary with timeout and optimization.
- * Supports large images (up to ~50MB) and auto quality adjustment.
- */
-export const uploadToCloudinary = (buffer, folder) =>
-  new Promise((resolve, reject) => {
+export const uploadToCloudinary = (buffer, folder = "products") => {
+  return new Promise((resolve, reject) => {
+    const cleanFolder = (folder || "products").trim().replace(/\s+/g, "_");
+
+    if (!buffer || !Buffer.isBuffer(buffer)) {
+      return reject(new Error("Invalid file buffer"));
+    }
+
     const stream = cloudinary.uploader.upload_stream(
       {
-        folder,
-        timeout: 300000, // 5 min
-        chunk_size: 10_000_000, // 10 MB chunks
-        allowed_formats: ["jpg", "jpeg", "png", "webp"],
+        folder: cleanFolder,
+        timeout: 300000,
+        chunk_size: 10_000_000,
         transformation: [{ quality: "auto:good", fetch_format: "auto" }],
       },
-      (err, result) => (err ? reject(err) : resolve(result))
+      (err, result) => {
+        if (err) {
+          console.error("❌ Cloudinary upload error:", err);
+          reject(new Error(err?.message || "Upload failed"));
+        } else {
+          resolve(result);
+        }
+      }
     );
+
     streamifier.createReadStream(buffer).pipe(stream);
   });
-
-
-export default cloudinary;
+};

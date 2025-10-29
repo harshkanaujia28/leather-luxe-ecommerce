@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import api from "@/utils/axios";
+import Cookies from "js-cookie";
 
 interface User {
   _id: string;
@@ -53,21 +54,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   // Sign in
-  const signIn = async (email: string, password: string) => {
-    try {
-      const res = await api.post("/auth/login", { email, password });
-      const { user: u, token } = res.data;
-      localStorage.setItem("user", JSON.stringify(u));
-      localStorage.setItem("token", token);
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      setUser(u);
-      return { user: u, token };
-    } catch (err: any) {
-      if (err.response) throw new Error(err.response.data?.message || "Login failed");
-      if (err.request) throw new Error("No response from server. Please try again.");
-      throw new Error(err.message);
-    }
-  };
+const signIn = async (email: string, password: string) => {
+  try {
+    const res = await api.post("/auth/login", { email, password });
+    const { user: u, token } = res.data;
+
+    // ✅ Save to both localStorage & cookies
+    localStorage.setItem("user", JSON.stringify(u));
+    localStorage.setItem("token", token);
+    Cookies.set("token", token, { expires: 7 });
+    Cookies.set("role", u.role, { expires: 7 });
+
+    // ✅ Set default header for axios instance
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+    setUser(u);
+    return { user: u, token };
+  } catch (err: any) {
+    if (err.response)
+      throw new Error(err.response.data?.message || "Login failed");
+    if (err.request)
+      throw new Error("No response from server. Please try again.");
+    throw new Error(err.message);
+  }
+};
 
   // Sign up (returns userId for OTP verification)
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {

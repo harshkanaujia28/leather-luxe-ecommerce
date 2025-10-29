@@ -14,6 +14,7 @@ import HeroSection from "@/components/Hero"
 import CategoryGrid from "@/components/CategoryGrid"
 import api from "@/utils/axios";
 import { useState, useEffect } from "react";
+import FeaturedProducts from "@/components/FeaturedProducts"
 
 interface Product {
   _id: string;
@@ -91,6 +92,8 @@ export default function HomePage() {
         </div>
       </section>
       <WhyUs />
+      <FeaturedProducts products={products}/>
+      
       {/* Features Section */}
       <section className="bg-muted/50 py-16 px-4 pt-16 pb-16">
         <div className="container mx-auto px-4">

@@ -1,58 +1,51 @@
-import express from "express"
-import multer from "multer"
-import path from "path"
+import express from "express";
+import multer from "multer";
+import { uploadToCloudinary } from "../utils/cloudinary.js";
 import {
   getAllBanners,
+  getHeroSlides,
   getBannerById,
   createBanner,
   updateBanner,
   deleteBanner,
   toggleActiveStatus,
   reorderHeroImage,
-} from "../controllers/bannerController.js"
-import Banner from "../models/Banner.js" // needed for fix-order
+  fixHeroBannerOrder,
+} from "../controllers/bannerController.js";
 
-const router = express.Router()
+const router = express.Router();
 
-// Setup multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
-})
-const upload = multer({ storage })
+// 🧩 Multer for memory storage (not disk)
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
-// Upload endpoint
-router.post("/upload", upload.single("file"), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "No file uploaded" })
-  res.json({ imageUrl: `/uploads/${req.file.filename}` })
-})
-
-// CRUD Routes
-router.get("/", getAllBanners)
-router.get("/:id", getBannerById)
-router.post("/", createBanner)
-router.put("/:id", updateBanner)
-router.delete("/:id", deleteBanner)
-
-// Custom actions
-router.patch("/:id/toggle", toggleActiveStatus)
-router.post("/:id/reorder", reorderHeroImage)
-
-// 🔧 Fix hero banner order based on createdAt
-router.post("/fix-order", async (req, res) => {
+// ✅ Upload to Cloudinary instead of local
+router.post("/upload", upload.single("file"), async (req, res) => {
   try {
-    const heroImages = await Banner.find({ type: "hero" }).sort({ createdAt: 1 })
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
-    for (let i = 0; i < heroImages.length; i++) {
-      heroImages[i].order = i + 1
-      await heroImages[i].save()
-    }
+    // Upload buffer to Cloudinary → banners folder
+    const result = await uploadToCloudinary(req.file.buffer, "banners");
 
-    res.json({ success: true, message: "✅ Hero banner order fixed." })
-  } catch (err) {
-    console.error("❌ Fix order error:", err)
-    res.status(500).json({ error: err.message })
+    // Cloudinary returns secure URL
+    res.json({ url: result.secure_url });
+  } catch (error) {
+    console.error("Cloudinary upload error:", error);
+    res.status(500).json({ error: "Cloudinary upload failed" });
   }
-})
+});
 
-export default router
+// 📚 CRUD routes
+router.get("/", getAllBanners);
+router.get("/slides", getHeroSlides);
+router.get("/:id", getBannerById);
+router.post("/", createBanner);
+router.put("/:id", updateBanner);
+router.delete("/:id", deleteBanner);
+
+// ⚡ Custom routes
+router.patch("/:id/toggle", toggleActiveStatus);
+router.post("/:id/reorder", reorderHeroImage);
+router.post("/fix-order", fixHeroBannerOrder);
+
+export default router;

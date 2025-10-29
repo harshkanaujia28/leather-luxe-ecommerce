@@ -16,6 +16,8 @@ import orderRoutes from "./routes/orders.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import zoneRoutes from "./routes/zones.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import bannerRoutes from "./routes/banners.js";
 
 dotenv.config();
 
@@ -36,6 +38,9 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/zones", zoneRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/banners", bannerRoutes);
+
 
 // root
 app.get("/", (req, res) => res.send("🚀 API is running"));

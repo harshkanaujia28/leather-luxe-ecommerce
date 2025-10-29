@@ -12,7 +12,11 @@ interface Product {
   name: string;
   price: number;
   brand: string;
-  category: { subCategory: string; gender: string };
+  category: {
+    category: string;      // ✅ your backend sends THIS
+    subCategory: string;
+    gender: string;
+  };
   offer?: { isActive: boolean; value?: number };
   rating?: number;
 }
@@ -27,6 +31,7 @@ type Filters = {
 };
 
 export default function AllProductsPage() {
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -39,55 +44,92 @@ export default function AllProductsPage() {
     offer: false,
   });
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const params: any = {};
-      if (filters.gender) params.gender = filters.gender;
-      if (filters.productType) params.productType = filters.productType;
-      if (filters.subCategory) params.subCategory = filters.subCategory;
-      if (filters.minPrice) params.minPrice = filters.minPrice;
-      if (filters.maxPrice) params.maxPrice = filters.maxPrice;
-      if (filters.offer) params.offer = "true";
-
-      const res = await api.get("/products", { params });
-      setProducts(res.data.products || []);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load products.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // ✅ Load once
   useEffect(() => {
-    fetchProducts();
-  }, [filters]);
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get("/products");
+        setAllProducts(res.data.products || []);
+        setProducts(res.data.products || []);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load products.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProducts();
+  }, []);
+
+  // ✅ Filter on frontend
+  useEffect(() => {
+    let filtered = [...allProducts];
+
+    if (filters.gender) {
+      filtered = filtered.filter(
+        (p) =>
+          p.category?.gender?.toLowerCase() ===
+          filters.gender.toLowerCase()
+      );
+    }
+
+    if (filters.productType) {
+      filtered = filtered.filter(
+        (p) => p.category?.category === filters.productType
+      );
+    }
+
+    if (filters.subCategory) {
+      filtered = filtered.filter(
+        (p) =>
+          p.category?.subCategory?.toLowerCase() ===
+          filters.subCategory.toLowerCase()
+      );
+    }
+
+    if (filters.minPrice) {
+      filtered = filtered.filter(
+        (p) => p.price >= Number(filters.minPrice)
+      );
+    }
+
+    if (filters.maxPrice) {
+      filtered = filtered.filter(
+        (p) => p.price <= Number(filters.maxPrice)
+      );
+    }
+
+    if (filters.offer) {
+      filtered = filtered.filter((p) => p.offer?.isActive === true);
+    }
+
+    setProducts(filtered);
+  }, [filters, allProducts]);
 
   return (
     <>
       <Header />
       <main className="max-w-7xl mx-auto px-4 py-10 flex flex-col min-h-screen">
         <h1 className="text-4xl font-bold mb-4 text-center">All Products</h1>
+
         <p className="text-center text-muted-foreground mb-6">
           {loading
             ? "Loading products..."
             : `Showing ${products.length} product${products.length !== 1 ? "s" : ""}`}
         </p>
 
-        {/* Filters */}
+        {/* ✅ Filters */}
         <div className="max-h-screen overflow-y-auto mb-6">
           <ProductFilter filters={filters} onFilterChange={setFilters} />
         </div>
 
-        {/* Error */}
+        {/* ✅ Error handling */}
         {error && (
           <div className="text-center py-4 text-red-500">
             {error}{" "}
             <button
-              onClick={fetchProducts}
+              onClick={() => window.location.reload()}
               className="ml-2 px-4 py-2 bg-blue-500 text-white rounded"
             >
               Retry
@@ -95,7 +137,7 @@ export default function AllProductsPage() {
           </div>
         )}
 
-        {/* Products / Coming Soon / No products */}
+        {/* ✅ Products */}
         <div className="flex-1 max-h-screen overflow-y-auto">
           {loading ? (
             <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -117,7 +159,9 @@ export default function AllProductsPage() {
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center">
-              <h2 className="text-2xl font-semibold text-center">No products found.</h2>
+              <h2 className="text-2xl font-semibold text-center">
+                No products found.
+              </h2>
             </div>
           )}
         </div>

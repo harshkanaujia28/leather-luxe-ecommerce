@@ -1,131 +1,182 @@
 "use client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { mockProducts, mockUsers } from "@/lib/mock-data"
-import { DollarSign, Package, ShoppingCart, Users } from "lucide-react"
-import { SalesChart } from "@/components/sales-chart"
-import { Button } from "@/components/ui/button";
-import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
-import {
 
-  LogOut,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { LogOut, IndianRupeeIcon, ShoppingCart, Package, Users } from "lucide-react";
+import { SalesChart } from "@/components/sales-chart";
+import { useAuth } from "@/contexts/AuthContext";
+
+interface DashboardStats {
+  totalRevenue: number;
+  totalOrders: number;
+  totalProducts: number;
+  totalCustomers: number;
+  recentOrders: {
+    _id: string;
+    totalPrice?: number; // ✅ made optional to avoid crash
+    status: string;
+    user: { name?: string; email?: string };
+  }[];
+  salesData: { month: string; total: number }[];
+}
 
 export default function AdminDashboard() {
-  const { user, signOut } = useAuth();
   const router = useRouter();
-  const totalProducts = mockProducts.length
-  const totalOrders = 45 // Mock data
-  const totalCustomers = mockUsers.filter((u) => u.role === "customer").length
-  const totalRevenue = mockProducts.reduce((sum, product) => sum + product.price, 0)
+  const { signOut } = useAuth();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const recentOrders = [
-    {
-      id: "order-1",
-      user: { first_name: "John", last_name: "Doe", email: "john@example.com" },
-      total: 89.99,
-      status: "delivered",
-    },
-    {
-      id: "order-2",
-      user: { first_name: "Jane", last_name: "Smith", email: "jane@example.com" },
-      total: 249.99,
-      status: "shipped",
-    },
-    {
-      id: "order-3",
-      user: { first_name: "Bob", last_name: "Johnson", email: "bob@example.com" },
-      total: 159.99,
-      status: "processing",
-    },
-    {
-      id: "order-4",
-      user: { first_name: "Alice", last_name: "Brown", email: "alice@example.com" },
-      total: 79.99,
-      status: "pending",
-    },
-    {
-      id: "order-5",
-      user: { first_name: "Charlie", last_name: "Wilson", email: "charlie@example.com" },
-      total: 199.99,
-      status: "delivered",
-    },
-  ]
+  // ✅ Fetch admin dashboard data
+  const fetchDashboardData = async () => {
+    try {
+      const token = Cookies.get("token");
+      if (!token) {
+        console.warn("No token found → redirecting to login");
+        router.push("/auth/login");
+        return;
+      }
+
+      console.log("🟡 Fetching dashboard data...");
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard`, {
+        headers: {
+          "Authorization": `Bearer ${token}`, // ✅ only ASCII
+          "Content-Type": "application/json",
+        },
+      });
+
+
+      console.log("✅ Dashboard Data:", res.data);
+      setStats(res.data);
+    } catch (err: any) {
+      console.error("❌ Failed to load dashboard:", err?.response?.data || err.message);
+      // ✅ Auto redirect if unauthorized
+      if (err?.response?.status === 401) {
+        Cookies.remove("token");
+        Cookies.remove("role");
+        router.push("/auth/login");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Run on first mount
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  // ✅ Secure Logout
   const handleLogout = () => {
-    // Clear authentication
-    signOut();
-
-    // Remove role cookie
+    signOut?.();
+    Cookies.remove("token");
     Cookies.remove("role");
-
-    // Redirect to login page
+    localStorage.clear();
     router.push("/auth/login");
   };
 
+  // ✅ Loading state
+  if (loading) return <p className="text-center py-10">Loading dashboard...</p>;
+
+  // ✅ Error state
+  if (!stats)
+    return (
+      <p className="text-center py-10 text-red-500">
+        Failed to load dashboard data.
+      </p>
+    );
+
+  // ✅ Safe helper function
+  const safeValue = (val?: number) => (typeof val === "number" ? val.toFixed(2) : "0.00");
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-8">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome to your admin dashboard. Here's an overview of your store.</p>
+          <p className="text-muted-foreground">
+            Welcome to your admin dashboard. Here’s your store overview.
+          </p>
         </div>
 
-
-        <Button onClick={handleLogout} className="bg-red-600 text-white hover:bg-red-700">
-          <LogOut className="w-4 h-4 mr-2" />
-          Logout
+        <Button
+          onClick={handleLogout}
+          className="bg-red-600 text-white hover:bg-red-700"
+        >
+          <LogOut className="w-4 h-4 mr-2" /> Logout
         </Button>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <IndianRupeeIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+            <div className="text-2xl font-bold">
+              ₹{safeValue(stats.totalRevenue)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              +20.1% from last month
+            </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Orders</CardTitle>
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalOrders}</div>
-            <p className="text-xs text-muted-foreground">+180.1% from last month</p>
+            <div className="text-2xl font-bold">{stats.totalOrders}</div>
+            <p className="text-xs text-muted-foreground">
+              +180.1% from last month
+            </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Products</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalProducts}</div>
+            <div className="text-2xl font-bold">{stats.totalProducts}</div>
             <p className="text-xs text-muted-foreground">+19% from last month</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Customers</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalCustomers}</div>
-            <p className="text-xs text-muted-foreground">+201 since last hour</p>
+            <div className="text-2xl font-bold">{stats.totalCustomers}</div>
+            <p className="text-xs text-muted-foreground">
+              +201 since last hour
+            </p>
           </CardContent>
         </Card>
       </div>
-      <SalesChart />
+
+      {/* Sales Chart */}
+      <SalesChart data={stats.salesData || []} />
+
+
       {/* Recent Orders */}
       <Card>
         <CardHeader>
@@ -134,16 +185,17 @@ export default function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {recentOrders.map((order) => (
-              <div key={order.id} className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">
-                    {order.user.first_name} {order.user.last_name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{order.user.email}</p>
+            {stats.recentOrders.map((order) => (
+              <div
+                key={order._id}
+                className="flex items-center justify-between border-b pb-2"
+              >
+                <div>
+                  <p className="text-sm font-medium">{order.customer}</p>
+                  <p className="text-xs text-muted-foreground">{order.email}</p>
                 </div>
-                <div className="text-right space-y-1">
-                  <p className="text-sm font-medium">${order.total.toFixed(2)}</p>
+                <div className="text-right">
+                  <p className="text-sm font-medium">₹{order.finalTotal.toFixed(2)}</p>
                   <Badge
                     variant={
                       order.status === "delivered"
@@ -160,10 +212,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
             ))}
+
           </div>
         </CardContent>
       </Card>
-
     </div>
-  )
+  );
 }

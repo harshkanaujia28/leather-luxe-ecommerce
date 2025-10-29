@@ -17,22 +17,25 @@ interface CategorySliderProps {
 
 export default function CategorySlider({ categories }: CategorySliderProps) {
   return (
-    <section className="bg-[var(--background)] py-4 border-b">
-      {/* Mobile / Tablet (Horizontal Scroll) */}
-      <div className="block lg:hidden overflow-x-auto whitespace-nowrap no-scrollbar">
-        <div className="flex gap-6 px-4 sm:px-8">
+    <section className="bg-[var(--background)] py-6 border-b">
+      {/* ✅ Mobile / Tablet – Smooth Scroll + Snap */}
+      <div className="lg:hidden overflow-x-auto no-scrollbar px-4">
+        <div className="flex gap-6 sm:gap-8 snap-x">
           {categories.map((category) => (
             <Link
               key={category.id}
               href={`/category/${category.slug}`}
-              className="flex flex-col items-center flex-shrink-0 group"
+              className="flex flex-col items-center flex-shrink-0 snap-always snap-center group"
             >
-              {/* Circle Image */}
+              {/* Image with glow + soft hover */}
               <div
                 className="
-                  rounded-full border-2 border-[var(--accent)] overflow-hidden 
-                  flex items-center justify-center bg-[var(--background)] 
-                  transition-transform duration-300 group-hover:scale-105
+                  rounded-full overflow-hidden border border-transparent
+                  bg-white/10 backdrop-blur-sm shadow-sm
+                  flex items-center justify-center
+                  transition-all duration-300
+                  group-hover:scale-[1.07] group-hover:shadow-lg
+                  group-hover:border-[var(--accent)]
                   w-20 h-20 sm:w-24 sm:h-24
                 "
               >
@@ -44,14 +47,20 @@ export default function CategorySlider({ categories }: CategorySliderProps) {
                     )}`
                   }
                   alt={category.name}
-                  width={96}
-                  height={96}
+                  width={100}
+                  height={100}
                   className="w-full h-full object-cover"
                 />
               </div>
 
-              {/* Category Name */}
-              <p className="mt-2 text-sm font-medium text-foreground text-center group-hover:text-[var(--accent)] transition-colors duration-300">
+              {/* Name */}
+              <p
+                className="
+                  mt-2 text-sm font-medium text-foreground text-center
+                  transition-all duration-300
+                  group-hover:text-[var(--accent)]
+                "
+              >
                 {category.name}
               </p>
             </Link>
@@ -59,22 +68,24 @@ export default function CategorySlider({ categories }: CategorySliderProps) {
         </div>
       </div>
 
-      {/* Desktop (Centered Grid with Gap-28) */}
+      {/* ✅ Desktop – Clean Center Grid with Bigger Icons */}
       <div className="hidden lg:flex justify-center">
-        <div className="flex gap-28">
+        <div className="flex gap-14 2xl:gap-20">
           {categories.map((category) => (
             <Link
               key={category.id}
               href={`/category/${category.slug}`}
               className="flex flex-col items-center group"
             >
-              {/* Circle Image */}
               <div
                 className="
-                  rounded-full border-2 border-[var(--accent)] overflow-hidden 
-                  flex items-center justify-center bg-[var(--background)] 
-                  transition-transform duration-300 group-hover:scale-105
-                  w-28 h-28
+                  rounded-full overflow-hidden border border-transparent
+                  bg-white/10 backdrop-blur-md shadow
+                  flex items-center justify-center
+                  transition-all duration-300
+                  group-hover:scale-[1.09] group-hover:shadow-xl
+                  group-hover:border-[var(--accent)]
+                  w-28 h-28 2xl:w-32 2xl:h-32
                 "
               >
                 <Image
@@ -85,14 +96,19 @@ export default function CategorySlider({ categories }: CategorySliderProps) {
                     )}`
                   }
                   alt={category.name}
-                  width={128}
-                  height={128}
+                  width={150}
+                  height={150}
                   className="w-full h-full object-cover"
                 />
               </div>
 
-              {/* Category Name */}
-              <p className="mt-4 text-base font-medium text-foreground text-center group-hover:text-[var(--accent)] transition-colors duration-300">
+              <p
+                className="
+                  mt-4 text-base font-semibold text-foreground text-center
+                  transition-colors duration-300
+                  group-hover:text-[var(--accent)]
+                "
+              >
                 {category.name}
               </p>
             </Link>

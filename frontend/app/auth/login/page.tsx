@@ -19,33 +19,43 @@ export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const result = await signIn(email, password);
-      const userData = result.user;
-      Cookies.set("role", userData?.role, { expires: 7 });
+  try {
+    const result = await signIn(email, password);
 
-      toast({
-        title: "Welcome back!",
-        description: "You have been successfully logged in.",
-      });
+    // ✅ Expect backend to return both token & user
+    const { token, user } = result;
 
-      // Role-based redirect
-      if (userData?.role === "admin") router.push("/admin");
-      else router.push("/");
-    } catch (error: any) {
-      toast({
-        title: "Login failed",
-        description: error.message || "Please check your credentials and try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+    if (!token || !user) {
+      throw new Error("Invalid response from server. Token missing.");
     }
-  };
+
+    // ✅ Save token and role for future API calls
+    Cookies.set("token", token, { expires: 7 });
+    Cookies.set("role", user.role, { expires: 7 });
+
+    toast({
+      title: "Welcome back!",
+      description: "You have been successfully logged in.",
+    });
+
+    // ✅ Role-based redirect
+    if (user.role === "admin") router.push("/admin");
+    else router.push("/");
+  } catch (error: any) {
+    toast({
+      title: "Login failed",
+      description: error.message || "Please check your credentials and try again.",
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-muted px-4">

@@ -223,6 +223,18 @@ export default function UpdateProductForm({
                 ?.subCategories.map((sub: string, idx: number) => <option key={idx} value={sub}>{sub}</option>)}
             </select>
           </div>
+            <div>
+              {renderLabel("Gender")}
+              <select value={product.category.gender}
+                onChange={e => handleNestedChange("category", "gender", e.target.value)}
+                className="input-brown">
+                <option value="">Select Gender</option>
+                <option value="male">Men</option>
+                <option value="female">Women</option>   {/* <-- must be "female" not "women" */}
+                <option value="unisex">Unisex</option>
+              </select>
+
+            </div>
         </div>
       )}
 
@@ -262,7 +274,7 @@ export default function UpdateProductForm({
             <div key={i} className="mb-3">
               {renderLabel(`Color ${i + 1}`)}
               <input type="text" placeholder="Color name" value={c.color} onChange={e => handleArrayChange("specifications.colors", i, "color", e.target.value)} className="input-brown mb-2" />
-              
+
               {/* Existing images */}
               <div className="flex flex-wrap gap-2 mb-2">
                 {c.existingImages?.map((img, idx) => (

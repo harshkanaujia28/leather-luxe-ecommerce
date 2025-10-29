@@ -4,13 +4,28 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, User, Search, Heart, Menu, X, LogOut } from "lucide-react";
+import {
+  ShoppingCart,
+  User,
+  Search,
+  Heart,
+  Menu,
+  X,
+  LogOut,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/contexts/cart-context";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWishlist } from "@/contexts/wishlist-context";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel, } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -19,7 +34,8 @@ export function Header() {
   const router = useRouter();
 
   const { state } = useCart();
-  const cartCount = state.items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
+  const cartCount =
+    state.items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
 
   const { items: wishlistItems } = useWishlist();
   const { user, signOut } = useAuth();
@@ -41,17 +57,32 @@ export function Header() {
   return (
     <header
       className="relative bg-center bg-no-repeat bg-cover"
-      style={{ backgroundImage: "url('/WhatsApp Image 2025-10-26 at 21.56.04_4bb281a7.jpg')" }}
+      style={{
+        backgroundImage:
+          "url('/WhatsApp Image 2025-10-26 at 21.56.04_4bb281a7.jpg')",
+      }}
     >
       <div className="absolute inset-0 bg-black/40"></div>
 
       {/* Top Offer Bar */}
       <div className="relative z-10 bg-[#7b2600] text-white text-xs sm:text-sm py-2 text-center font-medium">
-        ⚡ Get 10% Off as first-time customer — Use Code <strong>NEW10</strong> • T&C Apply*
+        ⚡ Get 10% Off as first-time customer — Use Code <strong>NEW10</strong>{" "}
+        • T&C Apply*
       </div>
 
       {/* Main Header */}
-      <div className="relative z-10 h-[15vh] flex items-center justify-between px-4 md:px-10">
+      <div
+        className="
+    relative 
+    z-10 
+    flex 
+    items-center 
+    justify-between 
+    px-3 sm:px-6 md:px-10 lg:px-16 
+    h-[11vh] sm:h-[14vh] md:h-[12vh] lg:h-[13vh]
+    py-4
+  "
+      >
         {/* Left: Hamburger */}
         <div className="flex items-center gap-3">
           <Button
@@ -61,11 +92,18 @@ export function Header() {
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             onClick={() => setMenuOpen(!menuOpen)}
           >
-            {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {menuOpen ? (
+              <X className="h!-6 !w-6" />
+            ) : (
+              <Menu className="!h-6 !w-6" />
+            )}
           </Button>
 
           {/* Desktop Search */}
-          <form onSubmit={handleSearch} className="hidden md:flex relative w-52 lg:w-64">
+          <form
+            onSubmit={handleSearch}
+            className="hidden md:flex relative w-52 lg:w-64"
+          >
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-[#e5c997]" />
             <Input
               value={searchQuery}
@@ -88,7 +126,7 @@ export function Header() {
             alt="Craft & Glory Logo"
             width={300}
             height={270}
-            className="w-[180px] h-[120px] sm:w-[300px] sm:h-[250px] object-contain ml-8"
+            className="w-[200px] h-[250px] sm:w-[300px] sm:h-[250px] object-contain ml-8"
             priority
           />
         </Link>
@@ -102,16 +140,22 @@ export function Header() {
             className="md:hidden text-[#e5c997]"
             onClick={() => setSearchOpen(!searchOpen)}
           >
-            <Search className="h-5 w-5" />
+            <Search className="!h-6 !w-6" />
           </Button>
 
           {/* Cart */}
-          <Button variant="ghost" size="icon" asChild aria-label="Cart">
-            <Link href="/cart">
-              <div className="relative">
-                <ShoppingCart className="h-5 w-5 text-[#e5c997]" />
+          <Button
+            variant="ghost"
+            asChild
+            aria-label="Cart"
+            className="h-10 w-10 p-0 flex items-center justify-center transition-colors duration-200"
+          >
+            <Link href="/cart" className="flex items-center justify-center">
+              <div className="relative flex items-center justify-center">
+                <ShoppingCart className="!h-6 !w-6 text-[#e5c997]" />{" "}
+                {/* Force override */}
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#7b2600] text-white text-[10px] font-bold rounded-full px-1">
+                  <span className="absolute -top-1 -right-1 bg-[#7b2600] text-white text-[11px] font-bold rounded-full px-1.5">
                     {cartCount}
                   </span>
                 )}
@@ -122,12 +166,21 @@ export function Header() {
           {/* Desktop Wishlist and User remain visible only on md+ */}
           <div className="hidden md:flex items-center space-x-3">
             {/* Wishlist */}
-            <Button variant="ghost" size="icon" asChild aria-label="Wishlist">
-              <Link href="/wishlist">
-                <div className="relative">
-                  <Heart className="h-5 w-5 text-[#e5c997]" />
+            <Button
+              variant="ghost"
+              asChild
+              aria-label="Wishlist"
+              className="h-10 w-10 p-0 flex items-center justify-center hover:bg-[#e5c997]/10 transition-colors duration-200"
+            >
+              <Link
+                href="/wishlist"
+                className="flex items-center justify-center"
+              >
+                <div className="relative flex items-center justify-center">
+                  <Heart className="!h-6 !w-6 text-[#e5c997]" />{" "}
+                  {/* 🔥 visibly larger icon */}
                   {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-white text-black text-[10px] font-bold rounded-full px-1">
+                    <span className="absolute -top-1 -right-1 bg-white text-black text-[11px] font-bold rounded-full px-1.5">
                       {wishlistCount}
                     </span>
                   )}
@@ -139,11 +192,14 @@ export function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" aria-label="User Menu">
-                  <User className="h-5 w-5 text-[#e5c997]" />
+                  <User className="!h-6 !w-6 text-[#e5c997]" />
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end" className="w-44 bg-white shadow-xl rounded-lg">
+              <DropdownMenuContent
+                align="end"
+                className="w-44 bg-white shadow-xl rounded-lg"
+              >
                 {user ? (
                   <>
                     <DropdownMenuLabel className="text-sm text-gray-700">
@@ -151,18 +207,27 @@ export function Header() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/profile" className="w-full text-gray-800 hover:text-[#7b2600]">
+                      <Link
+                        href="/profile"
+                        className="w-full text-gray-800 hover:text-[#7b2600]"
+                      >
                         Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/orders" className="w-full text-gray-800 hover:text-[#7b2600]">
+                      <Link
+                        href="/orders"
+                        className="w-full text-gray-800 hover:text-[#7b2600]"
+                      >
                         My Orders
                       </Link>
                     </DropdownMenuItem>
                     {user.role === "admin" && (
                       <DropdownMenuItem asChild>
-                        <Link href="/admin" className="w-full text-gray-800 hover:text-[#7b2600]">
+                        <Link
+                          href="/admin"
+                          className="w-full text-gray-800 hover:text-[#7b2600]"
+                        >
                           Admin Panel
                         </Link>
                       </DropdownMenuItem>
@@ -181,12 +246,18 @@ export function Header() {
                 ) : (
                   <>
                     <DropdownMenuItem asChild>
-                      <Link href="/auth/login" className="w-full text-gray-800 hover:text-[#7b2600]">
+                      <Link
+                        href="/auth/login"
+                        className="w-full text-gray-800 hover:text-[#7b2600]"
+                      >
                         Login
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/auth/signup" className="w-full text-gray-800 hover:text-[#7b2600]">
+                      <Link
+                        href="/auth/signup"
+                        className="w-full text-gray-800 hover:text-[#7b2600]"
+                      >
                         Register
                       </Link>
                     </DropdownMenuItem>
@@ -229,15 +300,29 @@ export function Header() {
             {/* User Menu inside menu */}
             {user ? (
               <>
-                <span className="text-sm text-[#e5c997]">Hi, {user.name?.split(" ")[0]}</span>
-                <Link href="/profile" onClick={() => setMenuOpen(false)} className="w-full text-center py-2 hover:text-[#e5c997]">
+                <span className="text-sm text-[#e5c997]">
+                  Hi, {user.name?.split(" ")[0]}
+                </span>
+                <Link
+                  href="/profile"
+                  onClick={() => setMenuOpen(false)}
+                  className="w-full text-center py-2 hover:text-[#e5c997]"
+                >
                   Profile
                 </Link>
-                <Link href="/orders" onClick={() => setMenuOpen(false)} className="w-full text-center py-2 hover:text-[#e5c997]">
+                <Link
+                  href="/orders"
+                  onClick={() => setMenuOpen(false)}
+                  className="w-full text-center py-2 hover:text-[#e5c997]"
+                >
                   My Orders
                 </Link>
                 {user.role === "admin" && (
-                  <Link href="/admin" onClick={() => setMenuOpen(false)} className="w-full text-center py-2 hover:text-[#e5c997]">
+                  <Link
+                    href="/admin"
+                    onClick={() => setMenuOpen(false)}
+                    className="w-full text-center py-2 hover:text-[#e5c997]"
+                  >
                     Admin Panel
                   </Link>
                 )}
@@ -253,10 +338,18 @@ export function Header() {
               </>
             ) : (
               <>
-                <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="w-full text-center py-2 hover:text-[#e5c997]">
+                <Link
+                  href="/auth/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="w-full text-center py-2 hover:text-[#e5c997]"
+                >
                   Login
                 </Link>
-                <Link href="/auth/signup" onClick={() => setMenuOpen(false)} className="w-full text-center py-2 hover:text-[#e5c997]">
+                <Link
+                  href="/auth/signup"
+                  onClick={() => setMenuOpen(false)}
+                  className="w-full text-center py-2 hover:text-[#e5c997]"
+                >
                   Register
                 </Link>
               </>

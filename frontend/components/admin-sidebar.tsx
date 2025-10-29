@@ -53,21 +53,21 @@ const menuItems = [
     url: "/admin/banners", // ✅ fixed
     icon: ImageIcon,
   },
-  {
-    title: "Delivery-Zones",
-    url: "/admin/delivery-zones", // ✅ fixed
-    icon: MapPin,
-  },
+  // {
+  //   title: "Delivery-Zones",
+  //   url: "/admin/delivery-zones", // ✅ fixed
+  //   icon: MapPin,
+  // },
   {
     title: "Support",
     url: "/admin/support", // ✅ fixed
     icon: LifeBuoy,
   },
-  {
-    title: "Legal",
-    url: "/admin/legal", // ✅ fixed
-    icon: FileText,
-  },
+  // {
+  //   title: "Legal",
+  //   url: "/admin/legal", // ✅ fixed
+  //   icon: FileText,
+  // },
   {
     title: "Reports",
     url: "/admin/reports",
@@ -78,11 +78,11 @@ const menuItems = [
     url: "/admin/profile",
     icon:UserCircle ,
   },
-  {
-    title: "Settings",
-    url: "/admin/settings",
-    icon: Settings,
-  },
+  // {
+  //   title: "Settings",
+  //   url: "/admin/settings",
+  //   icon: Settings,
+  // },
 ]
 
 
@@ -118,7 +118,7 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
+        {/* <SidebarGroup>
           <SidebarGroupLabel>Quick Actions</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -132,7 +132,7 @@ export function AdminSidebar() {
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
-        </SidebarGroup>
+        </SidebarGroup> */}
       </SidebarContent>
 
       <SidebarFooter className="border-t p-4">
