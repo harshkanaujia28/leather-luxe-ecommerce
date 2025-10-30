@@ -130,13 +130,13 @@ export function Header() {
       object-contain 
       
       /* ✅ VERY SMALL DEVICES (360px–480px) */
-      max-[480px]:w-[190px] max-[480px]:h-[160px]
+      max-[480px]:w-[160px] max-[480px]:h-[120px]
 
       /* ✅ SMALL PHONES (480px–639px) */
-      sm:w-[160px] sm:h-[120px]
+      sm:w-[150px] sm:h-[120px]
 
       /* ✅ TABLET (≥768px) */
-      md:w-[210px] md:h-[160px]
+      md:w-[190px] md:h-[140px]
 
       /* ✅ DESKTOP (≥1024px) */
       lg:w-[260px] lg:h-[200px]
