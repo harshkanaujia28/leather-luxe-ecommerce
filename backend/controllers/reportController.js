@@ -1,6 +1,4 @@
-import Vendor from "../models/Vendor.js";
 import Product from "../models/Product.js";
-import Brand from "../models/Brand.js";
 import User from "../models/User.js";
 import Order from "../models/Order.js";
 
@@ -39,12 +37,12 @@ export const getReportData = async (req, res) => {
 
     const dateFilter = startDate ? { createdAt: { $gte: startDate } } : {};
 
-    // ===== Sales Trend aggregation (Orders, delivered only)
+    // ✅ SALES DATA
     const salesDataRaw = await Order.aggregate([
       {
         $match: {
           status: "delivered",
-          paymentStatus: "paid", // ✅ सिर्फ़ paid orders
+          paymentStatus: "paid",
           ...dateFilter,
         },
       },
@@ -61,37 +59,19 @@ export const getReportData = async (req, res) => {
       { $sort: { "_id.year": 1, "_id.month": 1 } },
     ]);
 
-    const monthNames = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
+    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     const salesData = salesDataRaw.map((s) => ({
-      month: `${monthNames[s._id.month - 1]}-${s._id.year}`, // formatted label
+      month: `${monthNames[s._id.month - 1]}-${s._id.year}`,
       revenue: s.revenue,
       orders: s.orders,
     }));
 
-    // ===== Other collections
-    const vendors = await Vendor.find();
-    const products = await Product.find();
-    const brands = await Brand.find();
-
-    // ===== Users involved in orders (with order count + revenue)
+    // ✅ USERS
     const userAgg = await Order.aggregate([
       {
         $match: {
           status: "delivered",
-          paymentStatus: "paid", // ✅ सिर्फ़ paid orders
+          paymentStatus: "paid",
           ...dateFilter,
         },
       },
@@ -126,7 +106,7 @@ export const getReportData = async (req, res) => {
       revenue: userStats[u._id.toString()]?.revenue || 0,
     }));
 
-    // ===== Overview
+    // ✅ OVERVIEW
     const [totalOrders, totalRevenueAgg, totalUsers, totalProducts] =
       await Promise.all([
         Order.countDocuments({
@@ -155,17 +135,17 @@ export const getReportData = async (req, res) => {
       totalProducts,
     };
 
-    // ===== Payments
+    // ✅ PAYMENTS
     const payments = await Order.aggregate([
       {
         $match: {
-          paymentStatus: "paid", // ✅ sirf paid orders
+          paymentStatus: "paid",
           ...dateFilter,
         },
       },
       {
         $group: {
-          _id: "$status", // delivered, shipped etc
+          _id: "$status",
           count: { $sum: 1 },
           amount: { $sum: "$finalTotal" },
         },
@@ -180,13 +160,50 @@ export const getReportData = async (req, res) => {
       },
     ]);
 
-    // ===== Final Response
+    // ✅ ✅ ✅ TOP SELLING PRODUCTS BASED ON YOUR SCHEMA
+    const productAgg = await Order.aggregate([
+      {
+        $match: {
+          status: "delivered",
+          paymentStatus: "paid",
+          ...dateFilter,
+        },
+      },
+      { $unwind: "$products" },
+      {
+        $group: {
+          _id: "$products.product",
+          unitsSold: { $sum: "$products.quantity" },
+          revenue: { $sum: { $multiply: ["$products.quantity", "$products.price"] } },
+        },
+      },
+      { $sort: { unitsSold: -1 } },
+      { $limit: 10 }, // top 10
+    ]);
+
+    const productIds = productAgg.map((p) => p._id);
+    const productDetails = await Product.find({ _id: { $in: productIds } });
+
+    const products = productAgg.map((p) => {
+      const prod = productDetails.find(
+        (d) => d._id.toString() === p._id.toString()
+      );
+      return {
+        _id: prod?._id,
+        name: prod?.name,
+        brand: prod?.brand,
+        price: prod?.price,
+        category: prod?.category,
+        unitsSold: p.unitsSold,
+        revenue: p.revenue,
+      };
+    });
+
+    // ✅ SEND RESPONSE
     res.json({
       salesData,
-      vendors,
       products,
-      brands,
-      users, // 👈 ab users me orders + revenue bhi aa rahe hain
+      users,
       overview,
       payments,
     });

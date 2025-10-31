@@ -86,10 +86,10 @@ export function ProductCard({ product }: ProductCardProps) {
   //   });
   // };
   // Total stock from variants
-  const totalStock = product.variants?.reduce(
-    (sum: number, v: any) => sum + (v.stock || 0),
-    0
-  ) ?? 0;
+  const totalStock = product.variants && product.variants.length > 0
+    ? product.variants.reduce((sum: number, v: any) => sum + (v.stock || 0), 0)
+    : (product.stock ?? 0);
+
 
   const getProductImage = (product: Product): string => {
     if (product.mainImage) return product.mainImage;
@@ -157,6 +157,25 @@ export function ProductCard({ product }: ProductCardProps) {
           <h3 className="text-base font-semibold tracking-tight hover:text-primary transition-colors line-clamp-1 cursor-pointer">
             {product.name}
           </h3>
+          {/* Rating Stars */}
+          {/* Product Rating & Reviews */}
+          {product.reviews && product.reviews.length > 0 ? (
+            <div className="flex items-center gap-1">
+              <span className="text-yellow-500 text-sm">★</span>
+              <span className="text-sm font-medium">
+                {product.rating?.toFixed(1) || "0.0"}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                ({product.reviews.length} reviews)
+              </span>
+            </div>
+          ) : (
+            <span className="text-xs text-muted-foreground italic">
+              No reviews yet
+            </span>
+          )}
+
+
           <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>
         </CardContent>
 

@@ -5,7 +5,8 @@ import {
   getProducts,
   getProductById,
   deleteProduct,
-  addReview, // <-- import your review controller
+  addReview,
+  getRelatedProducts // <-- import your review controller
 } from "../controllers/productController.js";
 import upload from "../middlewares/cloudinaryMulter.js";
 
@@ -13,6 +14,7 @@ const router = express.Router();
 
 router.get("/", getProducts);
 router.get("/:id", getProductById);
+router.get("/related/:id", getRelatedProducts);
 router.post("/", upload.any(), createProduct);  
 router.put("/:id", upload.any(), updateProduct);
 router.delete("/:id", deleteProduct);

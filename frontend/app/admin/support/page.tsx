@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, MessageSquare, Package, DollarSign, Eye, CheckCircle, XCircle, Clock, Mail, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,179 +12,205 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
+import { useApi } from "@/contexts/api-context"
 
-
-const mockSupportTickets = [
-  {
-    id: "ST-001",
-    customer: "Sarah Johnson",
-    email: "sarah@example.com",
-    subject: "Allergic reaction to Tom Ford Oud Wood",
-    priority: "high",
-    status: "open",
-    category: "product_issue",
-    date: "2024-01-15",
-    lastUpdate: "2024-01-15",
-    orderId: "FR-1001",
-    fragrance: "Tom Ford Oud Wood 50ml",
-    description: "Customer experienced allergic reaction after using the fragrance. Requesting return and refund.",
-  },
-  {
-    id: "ST-002",
-    customer: "Mike Chen",
-    email: "mike@example.com",
-    subject: "Wrong fragrance received",
-    priority: "medium",
-    status: "in_progress",
-    category: "shipping_issue",
-    date: "2024-01-14",
-    lastUpdate: "2024-01-14",
-    orderId: "FR-1002",
-    fragrance: "Chanel No. 5 100ml",
-    description: "Customer ordered Chanel No. 5 but received Chanel Coco Mademoiselle instead.",
-  },
-  {
-    id: "ST-003",
-    customer: "Emma Davis",
-    email: "emma@example.com",
-    subject: "Damaged bottle during shipping",
-    priority: "high",
-    status: "resolved",
-    category: "shipping_issue",
-    date: "2024-01-13",
-    lastUpdate: "2024-01-13",
-    orderId: "FR-1003",
-    fragrance: "Dior Sauvage 100ml",
-    description: "Fragrance bottle arrived cracked, product leaked during transit.",
-  },
-]
-
-const mockReturns = [
-  {
-    id: "RT-001",
-    customer: "John Smith",
-    email: "john@example.com",
-    orderId: "FR-1004",
-    status: "pending_approval",
-    reason: "not_as_described",
-    date: "2024-01-15",
-    items: [
-      {
-        name: "Creed Aventus 50ml",
-        reason: "Scent doesn't match description",
-        condition: "unopened",
-        refundAmount: 299.99,
-      },
-    ],
-    totalRefund: 299.99,
-    returnMethod: "mail",
-  },
-  {
-    id: "RT-002",
-    customer: "Lisa Wilson",
-    email: "lisa@example.com",
-    orderId: "FR-1005",
-    status: "approved",
-    reason: "allergic_reaction",
-    date: "2024-01-14",
-    items: [
-      {
-        name: "Chanel Chance 100ml",
-        reason: "Allergic reaction to ingredients",
-        condition: "partially_used",
-        refundAmount: 120.0,
-      },
-    ],
-    totalRefund: 120.0,
-    returnMethod: "mail",
-  },
-  {
-    id: "RT-003",
-    customer: "David Brown",
-    email: "david@example.com",
-    orderId: "FR-1006",
-    status: "completed",
-    reason: "damaged",
-    date: "2024-01-13",
-    items: [
-      {
-        name: "Versace Eros 100ml",
-        reason: "Bottle cracked during shipping",
-        condition: "damaged",
-        refundAmount: 89.99,
-      },
-    ],
-    totalRefund: 89.99,
-    returnMethod: "replacement_sent",
-  },
-]
-
-const mockRefunds = [
-  {
-    id: "RF-001",
-    customer: "Anna Taylor",
-    email: "anna@example.com",
-    orderId: "FR-1007",
-    amount: 199.99,
-    status: "processed",
-    method: "credit_card",
-    date: "2024-01-15",
-    reason: "Return approved - allergic reaction",
-    fragrance: "Dolce & Gabbana Light Blue 100ml",
-  },
-  {
-    id: "RF-002",
-    customer: "Robert Lee",
-    email: "robert@example.com",
-    orderId: "FR-1008",
-    amount: 149.99,
-    status: "pending",
-    method: "paypal",
-    date: "2024-01-14",
-    reason: "Return approved - wrong item",
-    fragrance: "Hugo Boss Bottled 100ml",
-  },
-]
+interface SupportTicket {
+  id: string;
+  customer: string;
+  email: string;
+  subject: string;
+  priority: "low" | "medium" | "high";
+  status: "open" | "in_progress" | "resolved" | "closed";
+  category: "product_issue" | "shipping_issue" | "billing" | "general";
+  date: string;
+  lastUpdate: string;
+  orderId: string;
+  fragrance: string;
+  description: string;
+}
+interface ReturnRequest {
+  id: string;
+  customer: string;
+  email: string;
+  orderId: string;
+  status: "pending_approval" | "approved" | "completed" | "rejected";
+  reason: string;
+  date: string;
+  items: ReturnItem[];
+  totalRefund: number;
+  returnMethod: "mail" | "replacement_sent" | string;
+}
+export interface ReturnItem {
+  name: string;
+  reason: string;
+  condition: "unopened" | "partially_used" | "damaged";
+  refundAmount: number;
+}
 
 export default function SupportPage() {
+  const { getSupportTickets, updateSupportTicketStatus, getReturnRequests, approveReturnRequest, rejectReturnRequest, } = useApi()
+  const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([])
+  const [returns, setReturns] = useState<ReturnRequest[]>([])
+  const [refunds, setRefunds] = useState<any[]>([]) // optional: based on your refund data model
+  const [loading, setLoading] = useState(true)
+
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [priorityFilter, setPriorityFilter] = useState("all")
   const [categoryFilter, setCategoryFilter] = useState("all")
-  const [selectedTicket, setSelectedTicket] = useState<any>(null)
-  const [selectedReturn, setSelectedReturn] = useState<any>(null)
+  const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null)
+  const [selectedReturn, setSelectedReturn] = useState<ReturnRequest | null>(null)
+
   const { toast } = useToast()
 
-  const filteredTickets = mockSupportTickets.filter((ticket) => {
-    const matchesSearch =
-      ticket.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.fragrance.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || ticket.status === statusFilter
-    const matchesPriority = priorityFilter === "all" || ticket.priority === priorityFilter
-    const matchesCategory = categoryFilter === "all" || ticket.category === categoryFilter
-    return matchesSearch && matchesStatus && matchesPriority && matchesCategory
-  })
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [tickets, returnData] = await Promise.all([
+          getSupportTickets(),
+          getReturnRequests(),
+        ])
+        setSupportTickets(tickets)
+        setReturns(returnData)
+        console.log("Tickets:", tickets)
+      } catch (err) {
+        console.error("❌ Fetch Error:", err); // 🔍 add this line
+        toast({
+          title: "Error fetching data",
+          description: "Make sure the server is running.",
+          variant: "destructive",
+        })
 
-  const filteredReturns = mockReturns.filter((returnItem) => {
-    const matchesSearch =
-      returnItem.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      returnItem.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      returnItem.orderId.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || returnItem.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  const filteredRefunds = mockRefunds.filter((refund) => {
+    fetchData()
+  }, [toast])
+
+  const handleStatusUpdate = async (
+    id: string,
+    newStatus: SupportTicket["status"],
+    type: "Ticket"
+  ) => {
+    if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) {
+      console.error("❌ Invalid SupportTicket ID:", id);
+      toast({ title: "Invalid Ticket ID", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const updated = await updateSupportTicketStatus(id, newStatus);
+      setSupportTickets((prev) =>
+        prev.map((ticket) => (ticket._id === id ? updated : ticket))
+      );
+      toast({
+        title: "Status Updated",
+        description: `Ticket ${id} is now ${newStatus}`,
+      });
+    } catch (error) {
+      console.error("Failed to update ticket:", error);
+      toast({
+        title: "Failed to update ticket",
+        variant: "destructive",
+      });
+    }
+  };
+
+
+  const handleApproveReturn = (returnItem: any) => {
+    const id = returnItem?._id;
+    if (!id || !/^[0-9a-fA-F]{24}₹/.test(id)) {
+      console.error("❌ Invalid return request ID:", id);
+      return;
+    }
+
+    approveReturnRequest(id)
+      .then(() => {
+        toast({ title: "Return Approved", description: `Return ₹{id} approved.` });
+        // Optionally refresh data here
+      })
+
+      .catch((err) => {
+        console.error("Failed to approve:", err);
+        toast({ title: "Approval Failed", description: err.message, variant: "destructive" });
+      });
+  };
+
+  const handleRejectReturn = async (id: string, reason: string) => {
+    try {
+      const updated = await rejectReturnRequest(id, reason)
+      setReturns((prev) => prev.map((r) => (r.id === id ? updated : r)))
+      toast({
+        title: "Return Rejected",
+        description: `Return ₹{id} rejected.`,
+      })
+    } catch (error) {
+      toast({
+        title: "Failed to reject return",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const filteredTickets = supportTickets.filter((ticket) => {
+    const matchesSearch =
+      (ticket.id?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+      (ticket.customer?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+      (ticket.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+      (ticket.fragrance?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+
+    const matchesStatus = statusFilter === "all" || ticket.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+
+
+  const filteredReturns = returns.filter((returnItem) => {
+    const matchesSearch =
+      (returnItem?.id ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (returnItem?.customer ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (returnItem?.orderId ?? "").toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "all" || returnItem?.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+
+
+  const filteredRefunds = refunds.filter((refund) => {
     const matchesSearch =
       refund.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       refund.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
       refund.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      refund.fragrance.toLowerCase().includes(searchTerm.toLowerCase())
+      refund.fragrance?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "all" || refund.status === statusFilter
     return matchesSearch && matchesStatus
   })
+  const handleProcessRefund = async (id: string) => {
+    try {
+      // Example API call — you must have this in your API context
+      const updatedRefund = await processRefund(id)
+
+      setRefunds((prev) =>
+        prev.map((r) => (r.id === id ? updatedRefund : r))
+      )
+
+      toast({
+        title: "Refund Processed",
+        description: `Refund ₹{id} marked as completed.`,
+      })
+    } catch (error) {
+      toast({
+        title: "Failed to process refund",
+        description: "Check server or API implementation.",
+        variant: "destructive",
+      })
+    }
+  }
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -200,6 +226,7 @@ export default function SupportPage() {
       case "processed":
         return "bg-green-100 text-green-800 border-green-200"
       case "closed":
+      case "rejected":
         return "bg-gray-100 text-gray-800 border-gray-200"
       default:
         return "bg-gray-100 text-gray-800 border-gray-200"
@@ -219,30 +246,13 @@ export default function SupportPage() {
     }
   }
 
-  const handleStatusUpdate = (id: string, newStatus: string, type: string) => {
-    toast({
-      title: `${type} updated`,
-      description: `${type} ${id} status updated to ${newStatus}.`,
-    })
-  }
-
-  const handleApproveReturn = (returnId: string) => {
-    toast({
-      title: "Return approved",
-      description: `Return ${returnId} has been approved and refund will be processed.`,
-    })
-  }
-
-  const handleProcessRefund = (refundId: string) => {
-    toast({
-      title: "Refund processed",
-      description: `Refund ${refundId} has been processed successfully.`,
-    })
-  }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-     
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight">Support & Return,Refund</h2>
+        <p className="text-muted-foreground">Manage support tickets, return requests, and refunds</p>
+      </div>
 
       {/* Statistics Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -252,7 +262,7 @@ export default function SupportPage() {
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockSupportTickets.filter((t) => t.status === "open").length}</div>
+            <div className="text-2xl font-bold">{supportTickets.filter((t) => t.status === "open").length}</div>
             <p className="text-xs text-muted-foreground">+2 from yesterday</p>
           </CardContent>
         </Card>
@@ -263,7 +273,7 @@ export default function SupportPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {mockReturns.filter((r) => r.status === "pending_approval").length}
+              {returns.filter((r) => r.status === "pending_approval").length}
             </div>
             <p className="text-xs text-muted-foreground">Awaiting approval</p>
           </CardContent>
@@ -274,10 +284,10 @@ export default function SupportPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockRefunds.filter((r) => r.status === "pending").length}</div>
+            <div className="text-2xl font-bold">{refunds.filter((r) => r.status === "pending").length}</div>
             <p className="text-xs text-muted-foreground">
-              $
-              {mockRefunds
+              ₹
+              {refunds
                 .filter((r) => r.status === "pending")
                 .reduce((sum, r) => sum + r.amount, 0)
                 .toFixed(2)}{" "}
@@ -374,8 +384,8 @@ export default function SupportPage() {
                   </thead>
                   <tbody>
                     {filteredTickets.map((ticket) => (
-                      <tr key={ticket.id} className="border-b hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">{ticket.id}</td>
+                      <tr key={ticket._id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4 font-medium">{ticket._id}</td>
                         <td className="py-3 px-4">
                           <div>
                             <p className="font-medium">{ticket.customer}</p>
@@ -461,9 +471,13 @@ export default function SupportPage() {
                                 )}
                               </DialogContent>
                             </Dialog>
-                            <Select onValueChange={(value) => handleStatusUpdate(ticket.id, value, "Ticket")}>
-                              <SelectTrigger className="w-32">
-                                <SelectValue placeholder="Update" />
+                            <Select
+                              onValueChange={(newStatus) =>
+                                handleStatusUpdate(ticket._id, newStatus, "Ticket")
+                              }
+                            >
+                              <SelectTrigger className="w-[120px]">
+                                <SelectValue placeholder={ticket.status} />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="open">Open</SelectItem>
@@ -530,36 +544,42 @@ export default function SupportPage() {
                   </thead>
                   <tbody>
                     {filteredReturns.map((returnItem) => (
-                      <tr key={returnItem.id} className="border-b hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">{returnItem.id}</td>
+                      <tr key={returnItem._id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4 font-medium">{returnItem._id}</td>
                         <td className="py-3 px-4">
                           <div>
                             <p className="font-medium">{returnItem.customer}</p>
                             <p className="text-sm text-gray-600">{returnItem.email}</p>
                           </div>
                         </td>
-                        <td className="py-3 px-4">{returnItem.orderId}</td>
+                        <td className="py-3 px-4">{returnItem.orderId?._id}</td>
                         <td className="py-3 px-4">
                           <Badge variant="outline">{returnItem.reason.replace("_", " ")}</Badge>
                         </td>
-                        <td className="py-3 px-4 font-medium">${returnItem.totalRefund}</td>
+                        <td className="py-3 px-4 font-medium">₹{returnItem.totalRefund}</td>
                         <td className="py-3 px-4">
                           <Badge className={getStatusColor(returnItem.status)}>
                             {returnItem.status.replace("_", " ")}
                           </Badge>
                         </td>
-                        <td className="py-3 px-4">{returnItem.date}</td>
+                        <td className="py-3 px-4">
+                          {new Date(returnItem.date).toLocaleDateString()}
+                        </td>
                         <td className="py-3 px-4">
                           <div className="flex space-x-2">
                             <Dialog>
                               <DialogTrigger asChild>
-                                <Button variant="outline" size="sm" onClick={() => setSelectedReturn(returnItem)}>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setSelectedReturn(returnItem)}
+                                >
                                   <Eye className="w-4 h-4" />
                                 </Button>
                               </DialogTrigger>
                               <DialogContent className="max-w-2xl">
                                 <DialogHeader>
-                                  <DialogTitle>Return Details - {selectedReturn?.id}</DialogTitle>
+                                  <DialogTitle>Return Details - {selectedReturn?._id}</DialogTitle>
                                 </DialogHeader>
                                 {selectedReturn && (
                                   <div className="space-y-4">
@@ -571,24 +591,29 @@ export default function SupportPage() {
                                       </div>
                                       <div>
                                         <Label className="font-medium">Order ID</Label>
-                                        <p>{selectedReturn.orderId}</p>
+                                        <p>{selectedReturn.orderId?._id}</p>
                                       </div>
                                     </div>
                                     <div>
                                       <Label className="font-medium">Items to Return</Label>
-                                      {selectedReturn.items.map((item: any, index: number) => (
+                                      {selectedReturn.items.map((item: ReturnItem, index: number) => (
                                         <div key={index} className="border rounded p-3 mt-2">
                                           <p className="font-medium">{item.name}</p>
                                           <p className="text-sm text-gray-600">Reason: {item.reason}</p>
-                                          <p className="text-sm text-gray-600">Condition: {item.condition}</p>
-                                          <p className="text-sm font-medium">Refund: ${item.refundAmount}</p>
+                                          <p className="text-sm text-gray-600 capitalize">
+                                            Condition: {item.condition.replace("_", " ")}
+                                          </p>
+                                          <p className="text-sm font-medium">
+                                            Refund: ₹{item.refundAmount.toFixed(2)}
+                                          </p>
                                         </div>
                                       ))}
+
                                     </div>
                                     <div className="flex space-x-4">
                                       <div>
                                         <Label className="font-medium">Total Refund</Label>
-                                        <p className="text-lg font-bold">${selectedReturn.totalRefund}</p>
+                                        <p className="text-lg font-bold">₹{selectedReturn.totalRefund}</p>
                                       </div>
                                       <div>
                                         <Label className="font-medium">Return Method</Label>
@@ -601,7 +626,7 @@ export default function SupportPage() {
                                           <CheckCircle className="w-4 h-4 mr-2" />
                                           Approve Return
                                         </Button>
-                                        <Button variant="destructive">
+                                        <Button variant="destructive" onClick={() => handleRejectReturn(selectedReturn.id, "")}>
                                           <XCircle className="w-4 h-4 mr-2" />
                                           Reject Return
                                         </Button>
@@ -612,7 +637,7 @@ export default function SupportPage() {
                               </DialogContent>
                             </Dialog>
                             {returnItem.status === "pending_approval" && (
-                              <Button size="sm" onClick={() => handleApproveReturn(returnItem.id)}>
+                              <Button size="sm" onClick={() => handleApproveReturn(returnItem)}>
                                 <CheckCircle className="w-4 h-4" />
                               </Button>
                             )}
@@ -684,7 +709,7 @@ export default function SupportPage() {
                         </td>
                         <td className="py-3 px-4">{refund.orderId}</td>
                         <td className="py-3 px-4 text-sm">{refund.fragrance}</td>
-                        <td className="py-3 px-4 font-medium">${refund.amount}</td>
+                        <td className="py-3 px-4 font-medium">₹{refund.amount}</td>
                         <td className="py-3 px-4">
                           <Badge variant="outline">{refund.method.replace("_", " ")}</Badge>
                         </td>

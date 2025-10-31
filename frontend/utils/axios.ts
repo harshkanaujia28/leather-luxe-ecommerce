@@ -31,11 +31,7 @@ api.interceptors.response.use(
     // Handle 401, 403 errors globally
     if (error.response?.status === 401) {
       console.error("Unauthorized! Please login again.");
-         toast({
-        title: "Login Required",
-        description: "Please login to access more functionality.",
-        variant: "destructive",
-      });
+        
       // Optional: logout user
     }
     return Promise.reject(error);

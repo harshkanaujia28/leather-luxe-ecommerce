@@ -39,10 +39,14 @@ export const createProduct = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Name & Price required" });
     }
-    if (!category.category || !category.subCategory) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Category/SubCategory required" });
+    if (!category.category || !category.subCategory || !category.productType) {
+      return res.status(400).json({
+        success: false,
+        message: "Category, SubCategory & Product Type required",
+      });
+    }
+    if (!category.gender) {
+      category.gender = "Unisex"; // default fallback
     }
     if (!specifications.material) {
       return res
@@ -86,7 +90,12 @@ export const createProduct = async (req, res) => {
       price: Number(req.body.price),
       originalPrice: Number(req.body.originalPrice) || 0,
       description: req.body.description || "",
-      category,
+      category: {
+        category: category.category,
+        subCategory: category.subCategory,
+        gender: category.gender,
+        productType: category.productType,
+      },
       variants,
       features,
       specifications: { material: specifications.material, colors },
@@ -231,20 +240,39 @@ export const addReview = async (req, res) => {
 // ================= RELATED PRODUCTS =================
 export const getRelatedProducts = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
-    if (!product)
-      return res
-        .status(404)
-        .json({ success: false, message: "Product not found" });
+    const product = await Product.findById(req.params.id).populate(
+      "category.category"
+    );
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    const { subCategory, productType, gender } = product.category;
 
     const related = await Product.find({
-      "category.category": product.category.category,
       _id: { $ne: product._id },
-    }).limit(10);
+      "category.subCategory": subCategory,
+      "category.productType": productType,
+      "category.gender": gender,
+    })
+      .limit(10)
+      .select(
+        "name price mainImage brand brandImage category specifications offer featured bestSeller stock variants"
+      ); // ✅ Added stock + variants + mainImage + bestSeller
 
-    res.status(200).json({ success: true, products: related });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    return res.status(200).json({
+      success: true,
+      products: related,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
   }
 };
 
@@ -273,7 +301,19 @@ export const updateProduct = async (req, res) => {
     product.originalPrice =
       Number(req.body.originalPrice) || product.originalPrice;
     product.description = req.body.description || product.description;
-    product.category = category || product.category;
+    if (category && typeof category === "object") {
+      product.category.category =
+        category.category || product.category.category;
+
+      product.category.subCategory =
+        category.subCategory || product.category.subCategory;
+
+      product.category.gender = category.gender || product.category.gender;
+
+      product.category.productType =
+        category.productType || product.category.productType;
+    }
+
     product.variants = variants.length ? variants : product.variants;
     product.features = features.length ? features : product.features;
     product.offer = offer || product.offer;

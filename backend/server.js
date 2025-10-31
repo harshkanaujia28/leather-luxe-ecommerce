@@ -18,6 +18,9 @@ import zoneRoutes from "./routes/zones.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import bannerRoutes from "./routes/banners.js";
+import supportRoutes from "./routes/support.js";
+import returnRoutes from "./routes/returns.js";
+import reportRoutes from "./routes/reportRoutes.js";
 
 dotenv.config();
 
@@ -40,6 +43,9 @@ app.use("/api/zones", zoneRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/banners", bannerRoutes);
+app.use("/api/support", supportRoutes);
+app.use("/api/returns", returnRoutes);
+app.use("/api/reports", reportRoutes);
 
 
 // root

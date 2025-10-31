@@ -24,7 +24,13 @@ export default function AddProductForm({ onSubmit }: { onSubmit?: (product: any)
     price: 0,
     originalPrice: 0,
     description: "",
-    category: { category: "", subCategory: "", gender: "" },
+    category: {
+      category: "",        // ObjectId
+      subCategory: "",     // string
+      gender: "",          // Men/Women/Unisex
+      productType: ""      // ✅ required
+    },
+
     variants: [{ name: "", stock: 0 }] as VariantType[],
     specifications: { material: "", colors: [{ color: "", images: [] as File[] }] as ColorType[] },
     features: [] as string[],
@@ -118,7 +124,13 @@ export default function AddProductForm({ onSubmit }: { onSubmit?: (product: any)
       formData.append("originalPrice", String(product.originalPrice));
       formData.append("description", product.description);
       formData.append("featured", String(product.featured));
-      formData.append("category", JSON.stringify(product.category));
+      formData.append("category", JSON.stringify({
+        category: product.category.category,
+        subCategory: product.category.subCategory,
+        gender: product.category.gender,
+        productType: product.category.productType, // ✅ REQUIRED
+      }));
+
       formData.append("variants", JSON.stringify(product.variants));
       formData.append("features", JSON.stringify(product.features));
 
@@ -202,7 +214,23 @@ export default function AddProductForm({ onSubmit }: { onSubmit?: (product: any)
           </div>
           <div>
             {renderLabel("Category")}
-            <select value={product.category.category} onChange={e => handleNestedChange("category", "category", e.target.value)} className="input-brown">
+            <select
+              value={product.category.category}
+              onChange={e => {
+                const selected = categories.find(cat => cat._id === e.target.value);
+                setProduct(prev => ({
+                  ...prev,
+                  category: {
+                    ...prev.category,
+                    category: selected._id,
+                    productType: selected.productType, // ✅ ADD THIS
+                    gender: selected.gender || "",     // optional auto fill
+                  }
+                }));
+              }}
+              className="input-brown"
+            >
+
               <option value="">Select Category</option>
               {!loadingCategories && categories.map(cat => (
                 <option key={cat._id} value={cat._id}>{cat.productType}</option>
@@ -221,13 +249,15 @@ export default function AddProductForm({ onSubmit }: { onSubmit?: (product: any)
           <div>
             {renderLabel("Gender")}
             <select value={product.category.gender}
-              onChange={e => handleNestedChange("category", "gender", e.target.value)}
+              onChange={(e) => handleNestedChange("category", "gender", e.target.value)}
               className="input-brown">
+
               <option value="">Select Gender</option>
-              <option value="male">Men</option>
-              <option value="female">Women</option>   {/* <-- must be "female" not "women" */}
-              <option value="unisex">Unisex</option>
+              <option value="Men">Men</option>
+              <option value="Women">Women</option>
+              <option value="Unisex">Unisex</option>
             </select>
+
 
           </div>
         </div>

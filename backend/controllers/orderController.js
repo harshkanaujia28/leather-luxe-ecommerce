@@ -23,6 +23,9 @@ export const placeOrder = async (req, res) => {
     let totalQuantity = 0;
     const processedProducts = [];
 
+    // ✅ Track stock updates
+    const stockUpdates = [];
+
     for (const item of products) {
       const dbProduct = await Product.findById(item.product);
       if (!dbProduct)
@@ -30,9 +33,26 @@ export const placeOrder = async (req, res) => {
           .status(400)
           .json({ message: `Product not found: ${item.product}` });
 
+      // ✅ FIND VARIANT
+      const variant = dbProduct.variants.find(
+        (v) => v.name === item.selectedVariant
+      );
+
+      if (!variant) {
+        return res.status(400).json({
+          message: `Variant not found for ${dbProduct.name}`,
+        });
+      }
+
+      // ✅ STOCK CHECK
+      if (variant.stock < item.quantity) {
+        return res.status(400).json({
+          message: `${dbProduct.name} - ${item.selectedVariant} only ${variant.stock} left in stock`,
+        });
+      }
+
       totalQuantity += item.quantity;
 
-      // Determine final price
       let finalPrice = item.finalPrice ?? dbProduct.price;
       let discountApplied = 0;
       let offerSnapshot = {
@@ -43,7 +63,6 @@ export const placeOrder = async (req, res) => {
         description: "",
       };
 
-      // Apply backend offer if applicable
       if (
         (!item.finalPrice || item.finalPrice === dbProduct.price) &&
         dbProduct.offer?.isActive &&
@@ -100,15 +119,21 @@ export const placeOrder = async (req, res) => {
         image: dbProduct.specifications?.colors?.[0]?.images?.[0] || "",
         offer: offerSnapshot,
       });
+
+      // ✅ STORE STOCK UPDATE ACTION
+      stockUpdates.push({
+        product: dbProduct,
+        variant,
+        quantity: item.quantity,
+      });
     }
 
-    // 🚫 Delivery check removed
     const deliveryFee = 0;
     const deliveryTime = null;
 
-    // ✅ Coupon logic
     let appliedCoupon = null;
     let couponDiscount = 0;
+
     if (couponCode) {
       appliedCoupon = await Coupon.findOne({ code: couponCode });
       if (!appliedCoupon)
@@ -118,7 +143,9 @@ export const placeOrder = async (req, res) => {
         return res.status(400).json({ message: "Coupon expired" });
 
       if (appliedCoupon.usedCount >= appliedCoupon.totalLimit)
-        return res.status(400).json({ message: "Coupon usage limit reached" });
+        return res
+          .status(400)
+          .json({ message: "Coupon usage limit reached" });
 
       if (appliedCoupon.minOrder && subtotal < appliedCoupon.minOrder)
         return res.status(400).json({
@@ -142,14 +169,12 @@ export const placeOrder = async (req, res) => {
           : appliedCoupon.value;
     }
 
-    // ✅ Tax & Final Total
     const TAX_RATE = 0.1;
     const taxableAmount = subtotal - couponDiscount;
     const taxAmount = Math.round(taxableAmount * TAX_RATE * 100) / 100;
     const finalTotal =
       Math.round((taxableAmount + taxAmount + deliveryFee) * 100) / 100;
 
-    // ✅ Create order
     const orderData = {
       user: userId,
       customer: name,
@@ -172,6 +197,7 @@ export const placeOrder = async (req, res) => {
 
     const order = await Order.create(orderData);
 
+    // ✅ COUPON USAGE
     if (appliedCoupon) {
       await Coupon.updateOne(
         { _id: appliedCoupon._id },
@@ -179,7 +205,12 @@ export const placeOrder = async (req, res) => {
       );
     }
 
-    // ✅ Send admin email
+    // ✅ APPLY STOCK REDUCTION TO VARIANTS
+    for (const entry of stockUpdates) {
+      entry.variant.stock -= entry.quantity;
+      await entry.product.save();
+    }
+
     try {
       const html = getOrderEmailTemplate(order);
       await sendEmail(
@@ -197,6 +228,7 @@ export const placeOrder = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
 
 // =========================
 // Get Order By ID
