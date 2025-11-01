@@ -25,7 +25,17 @@ import reportRoutes from "./routes/reportRoutes.js";
 dotenv.config();
 
 const app = express();
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://www.koza.co.in",
+      "https://koza.co.in",
+    ],
+    credentials: true,
+  })
+);
+app.set("trust proxy", 1);
 app.use(express.json({ limit: "100mb" })); // ✅ handle large JSON payloads
 app.use(morgan("dev"));
 
@@ -47,7 +57,6 @@ app.use("/api/support", supportRoutes);
 app.use("/api/returns", returnRoutes);
 app.use("/api/reports", reportRoutes);
 
-
 // root
 app.get("/", (req, res) => res.send("🚀 API is running"));
 
@@ -61,4 +70,6 @@ mongoose
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 server.setTimeout(300000); // ✅ 5 minutes
-server.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+server.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);
