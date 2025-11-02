@@ -67,7 +67,7 @@ export function OrderManagement() {
       const sortedOrders = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
       setOrders(sortedOrders)
-      console.log(sortedOrders)
+      
     } catch (err) {
       console.error("Failed to fetch orders", err)
     }
@@ -79,7 +79,7 @@ export function OrderManagement() {
       const data = await getRevenue(); // ✅ API call
       setTotalRevenue(data.totalRevenue ?? 0);
       setTotalDeliveredOrders(data.totalOrders ?? 0);
-      console.log("Revenue Data:", data);
+     
     } catch (err) {
       console.error("Failed to fetch revenue", err);
     }

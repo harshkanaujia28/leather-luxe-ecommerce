@@ -32,6 +32,9 @@ export default function CheckoutPage() {
   const [couponCode, setCouponCode] = useState("");
   const [couponValue, setCouponValue] = useState(0);
   const [couponType, setCouponType] = useState<"Percentage" | "Fixed Amount" | null>(null);
+  const [availableCoupons, setAvailableCoupons] = useState([]);
+  const [couponLoading, setCouponLoading] = useState(false);
+
   // const [pincode, setPincode] = useState("");
   // const [loading, setLoading] = useState(false);
   // const [error, setError] = useState<string | null>(null);
@@ -39,27 +42,6 @@ export default function CheckoutPage() {
   // const [pincodeInput, setPincodeInput] = useState("");
   // const [pincodeError, setPincodeError] = useState("");
   // const [pincodeSuccess, setPincodeSuccess] = useState("");
-
-  useEffect(() => {
-    setHasMounted(true);
-    const fetchProfile = async () => {
-      try {
-        const profile = await getProfile();
-        if (profile) setProfileData(profile);
-      } catch (err) {
-        console.error("Failed to load profile", err);
-      }
-    };
-    fetchProfile();
-  }, []);
-
-  if (!hasMounted) return null;
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setProfileData({ ...profileData, [e.target.name]: e.target.value });
-  };
-
-  // ✅ Cart subtotal after offer discount
   const subtotalAfterOffer = state.items.reduce((sum, item) => {
     const price = item.price ?? item.product?.price ?? 0;
     let discount = 0;
@@ -74,6 +56,49 @@ export default function CheckoutPage() {
 
     return sum + (price - discount) * item.quantity;
   }, 0);
+
+  useEffect(() => {
+    setHasMounted(true);
+    const fetchProfile = async () => {
+      try {
+        const profile = await getProfile();
+        if (profile) setProfileData(profile);
+      } catch (err) {
+        console.error("Failed to load profile", err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  // ✅ second useEffect still here
+  useEffect(() => {
+    if (!subtotalAfterOffer || subtotalAfterOffer <= 0) return;
+
+    const fetchCoupons = async () => {
+      try {
+        setCouponLoading(true);
+        const res = await axios.post("/coupons/available", { subtotal: subtotalAfterOffer });
+        setAvailableCoupons(res.data.coupons || []);
+      } catch (err) {
+        console.error("Error fetching coupons:", err);
+      } finally {
+        setCouponLoading(false);
+      }
+    };
+
+    fetchCoupons();
+  }, [subtotalAfterOffer]);
+
+  // ✅ return AFTER ALL HOOKS
+  if (!hasMounted) return null;
+
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setProfileData({ ...profileData, [e.target.name]: e.target.value });
+  };
+
+  // ✅ Cart subtotal after offer discount
+
 
   // ✅ Coupon discount (applied after offer)
   const couponDiscount =
@@ -346,7 +371,7 @@ export default function CheckoutPage() {
                   razorpay_payment_id: response.razorpay_payment_id,
                   razorpay_signature: response.razorpay_signature,
                   orderDetails: { ...orderPayload, paymentMethod: "Razorpay", paymentStatus: "paid" },
-                 amount: backendFinalTotal,    // ✅ final total after offers + coupons + tax + delivery
+                  amount: backendFinalTotal,    // ✅ final total after offers + coupons + tax + delivery
 
                 }
               );
@@ -642,23 +667,74 @@ export default function CheckoutPage() {
                   <Separator className="bg-lime-500/30" />
 
                   {/* Coupon Section */}
-                  <div className="flex items-center gap-2">
-                    <Input
-                      placeholder="Coupon code"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value)}
-                      className="bg-white border-black/40 text-primary"
-                    />
-                    <Button
-                      type="button"
-                      onClick={applyCoupon}
-                      disabled={!couponCode}
-                      className="bg-primary text-white hover:bg-white hover:text-primary"
-                    >
-                      Apply
-                    </Button>
-                  </div>
+                  <div className="space-y-3">
 
+                    {/* ✅ Coupon Input + Apply button */}
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter coupon code"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value)}
+                        className="bg-white border-black/40 text-primary rounded-xl"
+                      />
+
+                      <Button
+                        type="button"
+                        onClick={applyCoupon} // ✅ Only applies
+                        disabled={!couponCode}
+                        className="bg-primary text-white px-5 rounded-xl
+               hover:bg-white hover:text-primary border border-primary transition-all"
+                      >
+                        Apply
+                      </Button>
+                    </div>
+
+                    {/* ✅ Available Coupons List */}
+                    {availableCoupons.length > 0 && (
+                      <Card className="bg-white border border-primary/20 shadow-md rounded-2xl ">
+                        <CardHeader className="">
+                          <CardTitle className="text-primary font-semibold text-lg">
+                            Available Offers
+                          </CardTitle>
+                        </CardHeader>
+
+                        <CardContent className="space-y-3">
+                          {couponLoading ? (
+                            <p className="text-sm text-gray-500">Loading coupons...</p>
+                          ) : (
+                            availableCoupons.map((c) => (
+                              <div
+                                key={c._id}
+                                className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 border rounded-xl p-3 transition-all"
+                              >
+                                <div className="space-y-0.5">
+                                  <p className="font-semibold text-primary text-sm">{c.code}</p>
+                                  <p className="text-xs text-gray-600">{c.description || "No description"}</p>
+                                  <p className="text-[11px] text-gray-500">
+                                    Min Order: ₹{c.minOrder} | Discount: {c.type === "Percentage"
+                                      ? `${c.value}%`
+                                      : `₹${c.value}`}
+                                  </p>
+                                </div>
+
+                                {/* ✅ Just fills input, does NOT apply */}
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  className="bg-primary text-white rounded-lg px-4 py-1 hover:bg-primary/80 transition-all"
+                                  onClick={() => setCouponCode(c.code)}
+                                >
+                                  Use
+                                </Button>
+
+
+                              </div>
+                            ))
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
                   <Separator className="bg-lime-500/30" />
 
                   {/* Totals */}

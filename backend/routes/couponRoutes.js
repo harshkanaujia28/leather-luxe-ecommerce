@@ -5,7 +5,8 @@ import {
   createCoupon,
   updateCoupon,
   deleteCoupon,
-  validateCouponByCode, // 👈 Add this
+  validateCouponByCode,
+  getAvailableCoupons // 👈 Add this
 } from "../controllers/couponController.js"
 
 import { protect } from "../middlewares/authMiddleware.js"
@@ -19,8 +20,10 @@ router.get("/validate", validateCouponByCode) // ✅ NEW PUBLIC ROUTE
 // Admin protected routes
 router.get("/", protect, isAdmin, getCoupons)
 router.post("/", protect, isAdmin, createCoupon)
+router.post("/available", getAvailableCoupons);
 router.get("/:id", protect, isAdmin, getCouponById)
 router.put("/:id", protect, isAdmin, updateCoupon)
 router.delete("/:id", protect, isAdmin, deleteCoupon)
+
 
 export default router
