@@ -16,6 +16,8 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import axios from "@/utils/axios";
 import { loadRazorpayScript } from "@/utils/razorpay";
+import { trackMetaEvent } from "@/utils/metaPixel";
+
 
 
 export default function CheckoutPage() {
@@ -88,6 +90,30 @@ export default function CheckoutPage() {
 
     fetchCoupons();
   }, [subtotalAfterOffer]);
+  useEffect(() => {
+    if (!hasMounted) return;
+    if (!state.items.length) return;
+
+    const couponDiscount =
+      couponType === "Percentage"
+        ? (couponValue / 100) * subtotalAfterOffer
+        : couponType === "Fixed Amount"
+          ? couponValue
+          : 0;
+
+    const tax = parseFloat(((subtotalAfterOffer - couponDiscount) * 0.1).toFixed(2));
+
+    const total = parseFloat(
+      (subtotalAfterOffer - couponDiscount + tax).toFixed(2)
+    );
+
+    trackMetaEvent("InitiateCheckout", {
+      value: total,
+      currency: "INR",
+      num_items: state.items.reduce((s, i) => s + i.quantity, 0),
+    });
+  }, [hasMounted]);
+
 
   // ✅ return AFTER ALL HOOKS
   if (!hasMounted) return null;
@@ -375,6 +401,15 @@ export default function CheckoutPage() {
 
                 }
               );
+              // ✅ META PURCHASE EVENT (HERE)
+              trackMetaEvent("Purchase", {
+                value: backendFinalTotal,
+                currency: "INR",
+                contents: orderPayload.products.map((p) => ({
+                  id: p.product,
+                  quantity: p.quantity,
+                })),
+              });
 
               toast({
                 title: "Payment Successful 🎉",
@@ -407,6 +442,14 @@ export default function CheckoutPage() {
           ...orderPayload,
           paymentMethod: "COD",
           paymentStatus: "pending",
+        });
+        trackMetaEvent("Purchase", {
+          value: total,
+          currency: "INR",
+          contents: orderPayload.products.map((p) => ({
+            id: p.product,
+            quantity: p.quantity,
+          })),
         });
 
         toast({

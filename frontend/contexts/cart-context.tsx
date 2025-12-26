@@ -8,6 +8,8 @@ import {
   ReactNode,
 } from "react";
 import api from "@/utils/axios"; // Axios with token
+import { trackMetaEvent } from "@/utils/metaPixel";
+
 
 // Types
 export interface Offer {
@@ -146,6 +148,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       });
 
       dispatch({ type: "SET_CART", payload: res.data.items });
+
+      // ✅ META PIXEL EVENT
+      trackMetaEvent("AddToCart", {
+        content_ids: [productId],
+        content_type: "product",
+        value: finalPrice * quantity,
+        currency: "INR",
+      });
     } catch (err) {
       console.error("❌ addToCart error:", err);
     }
@@ -187,7 +197,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         updateQuantity,
         clearCart,
         refreshCart,
-        
+
       }}
     >
       {children}
